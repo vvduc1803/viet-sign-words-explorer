@@ -29,12 +29,9 @@ const Header = () => {
   };
 
   const navItems = [
-    { path: '/', label: 'Trang chủ', icon: BookOpen },
-    { path: '/about-sign-language', label: 'Về NNKH', icon: BookOpen },
-    { path: '/signus', label: 'SignUs', icon: BookOpen },
-    { path: '/learn-sign-language', label: 'Học NNKH', icon: BookOpen },
-    { path: '/blog', label: 'Blog', icon: BookOpen },
-    { path: '/feedback', label: 'Hỏi đáp & Góp ý', icon: BookOpen }
+    { path: '/', label: 'Tra cứu', icon: Search },
+    { path: '/dictionary', label: 'Từ điển', icon: BookOpen },
+    { path: '/practice', label: 'Bài tập', icon: BookOpen }
   ];
 
   return (
@@ -44,35 +41,37 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-education-blue to-education-purple rounded-xl flex items-center justify-center">
-              <span className="text-white text-lg font-bold">S</span>
+              <BookOpen className="text-white w-6 h-6" />
             </div>
             <span className="text-xl font-bold gradient-text hidden sm:block">
-              SignUs
+              Từ điển Ký hiệu
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => {
+              const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 rounded-lg transition-all duration-300 font-medium ${
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
                     isActive
                       ? 'bg-education-blue text-white'
                       : 'text-gray-600 hover:text-education-blue hover:bg-blue-50'
                   }`}
                 >
-                  {item.label}
+                  <Icon className="w-4 h-4" />
+                  <span className="font-medium">{item.label}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Search Bar */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden lg:flex items-center space-x-2">
             <div className="relative">
               <input
                 type="text"
@@ -80,7 +79,7 @@ const Header = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-48 pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-education-blue focus:border-transparent transition-all duration-300"
+                className="w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-education-blue focus:border-transparent transition-all duration-300"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             </div>
@@ -95,7 +94,7 @@ const Header = () => {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
+            className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -103,22 +102,24 @@ const Header = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-100">
+          <div className="md:hidden py-4 border-t border-gray-100">
             <nav className="space-y-2">
               {navItems.map((item) => {
+                const Icon = item.icon;
                 const isActive = location.pathname === item.path;
                 return (
                   <Link
                     key={item.path}
                     to={item.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`block px-4 py-3 rounded-lg transition-all duration-300 font-medium ${
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300 ${
                       isActive
                         ? 'bg-education-blue text-white'
                         : 'text-gray-600 hover:text-education-blue hover:bg-blue-50'
                     }`}
                   >
-                    {item.label}
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
                   </Link>
                 );
               })}
