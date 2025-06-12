@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, BookOpen, Menu, X } from 'lucide-react';
+import { Search, BookOpen, Menu, X, GamepadIcon } from 'lucide-react';
 import { searchWord } from '../data/vocabulary';
 
 const Header = () => {
@@ -31,7 +31,8 @@ const Header = () => {
   const navItems = [
     { path: '/', label: 'Tra cứu', icon: Search },
     { path: '/dictionary', label: 'Từ điển', icon: BookOpen },
-    { path: '/practice', label: 'Bài tập', icon: BookOpen }
+    { path: '/practice', label: 'Bài tập', icon: BookOpen },
+    { path: '/games', label: 'Trò chơi', icon: GamepadIcon }
   ];
 
   return (
