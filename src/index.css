@@ -43,16 +43,17 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply font-bold;
   }
 }
 
 @layer components {
   .gradient-text {
-    @apply bg-gradient-to-r from-education-blue to-education-purple bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent;
   }
 
   .card-hover {
@@ -60,15 +61,15 @@
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-education-blue to-education-purple text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
+    @apply bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-lg hover:scale-105;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-education-blue focus:border-transparent transition-all duration-300;
+    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300;
   }
 }
 
-/* Game animations */
+/* Kid-friendly animations */
 @keyframes bounce-in {
   0% {
     transform: scale(0.3);
@@ -119,6 +120,27 @@
   }
 }
 
+@keyframes rainbow {
+  0% { color: #ff0000; }
+  16% { color: #ff8000; }
+  33% { color: #ffff00; }
+  50% { color: #00ff00; }
+  66% { color: #0080ff; }
+  83% { color: #8000ff; }
+  100% { color: #ff0000; }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
 .animate-bounce-in {
   animation: bounce-in 0.6s ease-out;
 }
@@ -131,7 +153,15 @@
   animation: wiggle 1s ease-in-out;
 }
 
-/* Custom scrollbar for game areas */
+.animate-rainbow {
+  animation: rainbow 2s linear infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Custom scrollbar for kid-friendly experience */
 .game-scroll::-webkit-scrollbar {
   width: 8px;
 }
@@ -148,4 +178,31 @@
 
 .game-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(45deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+/* Fun button effects */
+.btn-fun {
+  @apply transform transition-all duration-200 hover:scale-105 active:scale-95;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-fun:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Colorful backgrounds for different categories */
+.bg-animals {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-food {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-family {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bg-personal {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
 }
