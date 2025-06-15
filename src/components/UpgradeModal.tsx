@@ -1,18 +1,31 @@
 
 import React from 'react';
 import { X, Star, Check, Zap } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLoginRequired?: () => void;
 }
 
-const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
+const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onLoginRequired }) => {
+  const { user, isLoggedIn, upgrade } = useAuth();
+
   if (!isOpen) return null;
 
   const handleUpgrade = () => {
-    // Simulate upgrade process (will be replaced with real payment later)
+    if (!isLoggedIn) {
+      // Require login first
+      if (onLoginRequired) {
+        onLoginRequired();
+      }
+      return;
+    }
+    
+    // Simulate upgrade process
     console.log('Upgrade to Plus');
+    upgrade();
     onClose();
   };
 
@@ -44,6 +57,9 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
             </div>
             <h2 className="text-3xl font-bold mb-2">Nâng cấp lên Plus</h2>
             <p className="text-blue-100 text-lg">Mở khóa toàn bộ tính năng và sử dụng không giới hạn</p>
+            {!isLoggedIn && (
+              <p className="text-yellow-200 text-sm mt-2 font-medium">⚠️ Bạn cần đăng nhập để nâng cấp</p>
+            )}
           </div>
         </div>
 
@@ -78,7 +94,9 @@ const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose }) => {
               className="w-full bg-gradient-to-r from-education-blue to-education-purple text-white py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
             >
               <Zap className="w-5 h-5" />
-              <span>Nâng cấp ngay - 299.000₫/tháng</span>
+              <span>
+                {!isLoggedIn ? 'Đăng nhập để nâng cấp' : 'Nâng cấp ngay - 299.000₫/tháng'}
+              </span>
             </button>
             
             <button className="w-full border-2 border-gray-300 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors duration-300">

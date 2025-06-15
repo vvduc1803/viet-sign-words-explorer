@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Search, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
@@ -165,6 +164,15 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
     window.getSelection()?.removeAllRanges();
   };
 
+  const handleUpgradeClick = () => {
+    if (!isLoggedIn) {
+      setAuthMode('login');
+      setAuthModalOpen(true);
+    } else {
+      setUpgradeModalOpen(true);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -176,7 +184,7 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
             setAuthMode('login');
             setAuthModalOpen(true);
           }}
-          onUpgrade={() => setUpgradeModalOpen(true)}
+          onUpgrade={handleUpgradeClick}
         />
 
         {/* Hero Section */}
@@ -413,6 +421,11 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
       <UpgradeModal
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
+        onLoginRequired={() => {
+          setUpgradeModalOpen(false);
+          setAuthMode('login');
+          setAuthModalOpen(true);
+        }}
       />
     </div>
   );

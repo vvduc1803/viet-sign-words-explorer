@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,26 +12,52 @@ interface AuthModalProps {
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChange }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
     confirmPassword: ''
   });
+  const { login, register } = useAuth();
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login/register (will be replaced with real auth later)
-    console.log('Auth submit:', mode, formData);
-    onClose();
+    setIsLoading(true);
+    
+    try {
+      if (mode === 'login') {
+        await login(formData.email, formData.password);
+      } else {
+        await register(formData.name, formData.email, formData.password);
+      }
+      onClose();
+      setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+    } catch (error) {
+      console.error('Auth error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickLogin = async () => {
+    setIsLoading(true);
+    try {
+      await login('test@example.com', 'password123');
+      onClose();
+    } catch (error) {
+      console.error('Quick login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
-    // Simulate Google login (will be replaced with real auth later)
-    console.log('Google login');
-    onClose();
+    // Simulate Google login
+    console.log('Google login simulation');
+    handleQuickLogin();
   };
 
   return (
@@ -51,6 +78,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
 
         {/* Content */}
         <div className="p-6">
+          {/* Quick Test Login */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-xl">
+            <h3 className="font-medium text-blue-800 mb-2">🧪 Demo/Test</h3>
+            <button
+              onClick={handleQuickLogin}
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập nhanh (Test)'}
+            </button>
+            <p className="text-xs text-blue-600 mt-2">Dùng để test tính năng nâng cấp Plus</p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div className="relative">
@@ -113,9 +153,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-education-blue to-education-purple text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-education-blue to-education-purple text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
-              {mode === 'login' ? 'Đăng nhập' : 'Đăng ký'}
+              {isLoading ? 'Đang xử lý...' : (mode === 'login' ? 'Đăng nhập' : 'Đăng ký')}
             </button>
           </form>
 
@@ -129,7 +170,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
           {/* Google Login */}
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center space-x-3 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition-colors duration-300"
+            disabled={isLoading}
+            className="w-full flex items-center justify-center space-x-3 border border-gray-300 py-3 rounded-xl hover:bg-gray-50 transition-colors duration-300 disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

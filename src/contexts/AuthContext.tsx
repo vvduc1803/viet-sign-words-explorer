@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     
     const mockUser: User = {
       id: '1',
-      name: 'Người dùng',
+      name: email.includes('test') ? 'Test User' : 'Người dùng',
       email: email,
       isPremium: false
     };

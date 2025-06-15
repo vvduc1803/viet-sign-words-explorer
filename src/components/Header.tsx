@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Search, BookOpen, PenTool, Heart, User, LogOut, Star } from 'lucide-react';
@@ -31,6 +30,16 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     setUserMenuOpen(false);
+  };
+
+  const handleUpgradeClick = () => {
+    if (!isLoggedIn) {
+      // Show login modal first
+      setAuthMode('login');
+      setAuthModalOpen(true);
+    } else {
+      setUpgradeModalOpen(true);
+    }
   };
 
   return (
@@ -85,7 +94,7 @@ const Header = () => {
                   {/* Upgrade Button (only for non-premium users) */}
                   {!user?.isPremium && (
                     <button
-                      onClick={() => setUpgradeModalOpen(true)}
+                      onClick={handleUpgradeClick}
                       className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
                     >
                       <Star className="w-4 h-4" />
@@ -130,6 +139,15 @@ const Header = () => {
                 </>
               ) : (
                 <>
+                  {/* Upgrade Button for non-logged in users */}
+                  <button
+                    onClick={handleUpgradeClick}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
+                  >
+                    <Star className="w-4 h-4" />
+                    <span>Plus</span>
+                  </button>
+                  
                   <button
                     onClick={() => handleAuthClick('login')}
                     className="text-gray-600 hover:text-education-blue font-medium transition-colors duration-200"
@@ -209,7 +227,7 @@ const Header = () => {
                   {!user?.isPremium && (
                     <button
                       onClick={() => {
-                        setUpgradeModalOpen(true);
+                        handleUpgradeClick();
                         setIsOpen(false);
                       }}
                       className="w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 text-white"
@@ -232,6 +250,18 @@ const Header = () => {
                 </>
               ) : (
                 <>
+                  {/* Mobile Upgrade Button */}
+                  <button
+                    onClick={() => {
+                      handleUpgradeClick();
+                      setIsOpen(false);
+                    }}
+                    className="w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                  >
+                    <Star className="w-5 h-5" />
+                    <span>Nâng cấp Plus</span>
+                  </button>
+                  
                   <button
                     onClick={() => {
                       handleAuthClick('login');
@@ -269,6 +299,11 @@ const Header = () => {
       <UpgradeModal
         isOpen={upgradeModalOpen}
         onClose={() => setUpgradeModalOpen(false)}
+        onLoginRequired={() => {
+          setUpgradeModalOpen(false);
+          setAuthMode('login');
+          setAuthModalOpen(true);
+        }}
       />
 
       {/* Click outside to close user menu */}
