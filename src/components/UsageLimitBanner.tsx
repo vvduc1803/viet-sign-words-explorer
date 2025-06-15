@@ -4,6 +4,7 @@ import { AlertCircle, Star, Upload, Search, BookOpen, PenTool } from 'lucide-rea
 
 interface UsageLimitBannerProps {
   isLoggedIn: boolean;
+  isPremium: boolean;
   onUpgrade?: () => void;
   onLogin?: () => void;
   currentUsage: {
@@ -16,10 +17,16 @@ interface UsageLimitBannerProps {
 
 const UsageLimitBanner: React.FC<UsageLimitBannerProps> = ({ 
   isLoggedIn, 
+  isPremium,
   onUpgrade, 
   onLogin,
   currentUsage 
 }) => {
+  // Don't show banner for premium users
+  if (isPremium) {
+    return null;
+  }
+
   const limits = isLoggedIn 
     ? { searches: 50, uploads: 3, practices: 3, savedWords: 50 }
     : { searches: 20, uploads: 1, practices: 0, savedWords: 0 };

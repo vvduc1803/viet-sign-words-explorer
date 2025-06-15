@@ -12,7 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Index = () => {
   const location = useLocation();
-  const { isLoggedIn, usageStats, updateUsage, canPerformAction } = useAuth();
+  const { user, isLoggedIn, usageStats, updateUsage, canPerformAction } = useAuth();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<VocabularyItem | null>(null);
@@ -179,6 +179,7 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
         {/* Usage Limit Banner */}
         <UsageLimitBanner
           isLoggedIn={isLoggedIn}
+          isPremium={user?.isPremium || false}
           currentUsage={usageStats}
           onLogin={() => {
             setAuthMode('login');
