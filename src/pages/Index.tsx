@@ -4,6 +4,8 @@ import { useLocation } from 'react-router-dom';
 import { Search, Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
 import { searchWord, VocabularyItem } from '../data/vocabulary';
 import VideoPlayer from '../components/VideoPlayer';
+import TooltipSettings from '../components/TooltipSettings';
+import WordTooltip from '../components/WordTooltip';
 
 const Index = () => {
   const location = useLocation();
@@ -14,6 +16,14 @@ const Index = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState('');
   const [selectedText, setSelectedText] = useState('');
+  const [tooltipWord, setTooltipWord] = useState<VocabularyItem | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [tooltipSettings, setTooltipSettings] = useState({
+    showDescription: true,
+    showImage: true,
+    showVideo: true,
+    showSignVideo: true
+  });
 
   // Handle URL search parameters
   useEffect(() => {
@@ -31,6 +41,20 @@ const Index = () => {
       }
     }
   }, [location.search]);
+
+  // Load tooltip settings from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem('tooltipSettings');
+    if (saved) {
+      setTooltipSettings(JSON.parse(saved));
+    }
+  }, []);
+
+  // Save tooltip settings to localStorage
+  const handleTooltipSettingsChange = (newSettings: typeof tooltipSettings) => {
+    setTooltipSettings(newSettings);
+    localStorage.setItem('tooltipSettings', JSON.stringify(newSettings));
+  };
 
   const handleSearchWord = (query: string) => {
     setIsLoading(true);
@@ -95,13 +119,29 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
     }
   };
 
-  const handleTextSelection = () => {
+  const handleTextSelection = (e: React.MouseEvent) => {
     const selection = window.getSelection();
     const selectedText = selection?.toString().trim();
-    if (selectedText) {
+    
+    if (selectedText && selectedText.length > 0) {
       setSelectedText(selectedText);
-      handleSearchWord(selectedText);
+      
+      // Search for the word in vocabulary
+      const foundWord = searchWord(selectedText);
+      if (foundWord) {
+        setTooltipWord(foundWord);
+        setTooltipPosition({ x: e.clientX, y: e.clientY });
+      } else {
+        setTooltipWord(null);
+      }
+    } else {
+      setTooltipWord(null);
     }
+  };
+
+  const closeTooltip = () => {
+    setTooltipWord(null);
+    window.getSelection()?.removeAllRanges();
   };
 
   return (
@@ -151,10 +191,16 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
 
           {/* File Upload Section */}
           <div className="border-t border-gray-200 pt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-              <Upload className="w-5 h-5 mr-2 text-education-blue" />
-              Tải lên tài liệu
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                <Upload className="w-5 h-5 mr-2 text-education-blue" />
+                Tải lên tài liệu
+              </h3>
+              <TooltipSettings
+                settings={tooltipSettings}
+                onSettingsChange={handleTooltipSettingsChange}
+              />
+            </div>
             <div className="relative">
               <input
                 type="file"
@@ -302,6 +348,16 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
           </div>
         </div>
       </div>
+
+      {/* Word Tooltip */}
+      {tooltipWord && (
+        <WordTooltip
+          word={tooltipWord}
+          position={tooltipPosition}
+          settings={tooltipSettings}
+          onClose={closeTooltip}
+        />
+      )}
     </div>
   );
 };

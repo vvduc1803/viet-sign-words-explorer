@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import { Search, Grid, List, Filter } from 'lucide-react';
-import { themes, getWordsByTheme, getAllWords, VocabularyItem } from '../data/vocabulary';
+import { Search, Grid, List, Filter, BookmarkPlus, Bookmark } from 'lucide-react';
+import { themes, getWordsByTheme, getAllWords, VocabularyItem, isInPersonalCollection, addToPersonalCollection, removeFromPersonalCollection } from '../data/vocabulary';
 import WordModal from '../components/WordModal';
 
 const Dictionary = () => {
@@ -10,6 +9,17 @@ const Dictionary = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedWord, setSelectedWord] = useState<VocabularyItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Listen for personal collection changes
+  React.useEffect(() => {
+    const handleCollectionChange = () => {
+      setRefreshKey(prev => prev + 1);
+    };
+
+    window.addEventListener('personalCollectionChanged', handleCollectionChange);
+    return () => window.removeEventListener('personalCollectionChanged', handleCollectionChange);
+  }, []);
 
   const getFilteredWords = () => {
     let words = selectedTheme === 'all' ? getAllWords() : getWordsByTheme(selectedTheme);
@@ -33,6 +43,19 @@ const Dictionary = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedWord(null);
+  };
+
+  const handleToggleCollection = (word: VocabularyItem, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isInCollection = isInPersonalCollection(word.id);
+    
+    if (isInCollection) {
+      removeFromPersonalCollection(word.id);
+    } else {
+      addToPersonalCollection(word.id);
+    }
+    
+    setRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -160,59 +183,105 @@ const Dictionary = () => {
           <div className="animate-bounce-in">
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredWords.map(word => (
-                  <div
-                    key={word.id}
-                    onClick={() => handleWordClick(word)}
-                    className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer card-hover group"
-                  >
-                    <div className="aspect-square overflow-hidden">
-                      <img
-                        src={word.image}
-                        alt={word.word}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+                {filteredWords.map(word => {
+                  const isInCollection = isInPersonalCollection(word.id);
+                  
+                  return (
+                    <div
+                      key={`${word.id}-${refreshKey}`}
+                      className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer card-hover group relative"
+                    >
+                      <div 
+                        onClick={() => handleWordClick(word)}
+                        className="aspect-square overflow-hidden"
+                      >
+                        <img
+                          src={word.image}
+                          alt={word.word}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1" onClick={() => handleWordClick(word)}>
+                            <h3 className="font-semibold text-gray-800 mb-1">{word.word}</h3>
+                            <p className="text-sm text-education-blue">{word.theme}</p>
+                          </div>
+                          <button
+                            onClick={(e) => handleToggleCollection(word, e)}
+                            className={`ml-2 p-2 rounded-full transition-all duration-300 ${
+                              isInCollection
+                                ? 'bg-education-blue text-white hover:bg-blue-600'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                            title={isInCollection ? 'Xóa khỏi bộ sưu tập' : 'Thêm vào bộ sưu tập'}
+                          >
+                            {isInCollection ? (
+                              <Bookmark className="w-4 h-4" />
+                            ) : (
+                              <BookmarkPlus className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                        {word.description && (
+                          <p className="text-xs text-gray-500 mt-2 line-clamp-2" onClick={() => handleWordClick(word)}>
+                            {word.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-800 mb-1">{word.word}</h3>
-                      <p className="text-sm text-education-blue">{word.theme}</p>
-                      {word.description && (
-                        <p className="text-xs text-gray-500 mt-2 line-clamp-2">
-                          {word.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                {filteredWords.map((word, index) => (
-                  <div
-                    key={word.id}
-                    onClick={() => handleWordClick(word)}
-                    className={`flex items-center p-6 cursor-pointer hover:bg-gray-50 transition-colors duration-300 group ${
-                      index !== filteredWords.length - 1 ? 'border-b border-gray-100' : ''
-                    }`}
-                  >
-                    <div className="w-16 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0">
-                      <img
-                        src={word.image}
-                        alt={word.word}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+                {filteredWords.map((word, index) => {
+                  const isInCollection = isInPersonalCollection(word.id);
+                  
+                  return (
+                    <div
+                      key={`${word.id}-${refreshKey}`}
+                      className={`flex items-center p-6 hover:bg-gray-50 transition-colors duration-300 group ${
+                        index !== filteredWords.length - 1 ? 'border-b border-gray-100' : ''
+                      }`}
+                    >
+                      <div 
+                        onClick={() => handleWordClick(word)}
+                        className="w-16 h-16 rounded-lg overflow-hidden mr-4 flex-shrink-0 cursor-pointer"
+                      >
+                        <img
+                          src={word.image}
+                          alt={word.word}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                      </div>
+                      <div className="flex-1" onClick={() => handleWordClick(word)}>
+                        <h3 className="font-semibold text-gray-800 mb-1 cursor-pointer">{word.word}</h3>
+                        <p className="text-sm text-education-blue mb-1">{word.theme}</p>
+                        {word.description && (
+                          <p className="text-sm text-gray-500 line-clamp-1">
+                            {word.description}
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => handleToggleCollection(word, e)}
+                        className={`ml-4 p-3 rounded-full transition-all duration-300 ${
+                          isInCollection
+                            ? 'bg-education-blue text-white hover:bg-blue-600'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        title={isInCollection ? 'Xóa khỏi bộ sưu tập' : 'Thêm vào bộ sưu tập'}
+                      >
+                        {isInCollection ? (
+                          <Bookmark className="w-5 h-5" />
+                        ) : (
+                          <BookmarkPlus className="w-5 h-5" />
+                        )}
+                      </button>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800 mb-1">{word.word}</h3>
-                      <p className="text-sm text-education-blue mb-1">{word.theme}</p>
-                      {word.description && (
-                        <p className="text-sm text-gray-500 line-clamp-1">
-                          {word.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

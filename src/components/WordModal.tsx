@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
-import { VocabularyItem } from '../data/vocabulary';
+import { X, ExternalLink, BookmarkPlus, Bookmark } from 'lucide-react';
+import { VocabularyItem, isInPersonalCollection, addToPersonalCollection, removeFromPersonalCollection } from '../data/vocabulary';
 import VideoPlayer from './VideoPlayer';
 
 interface WordModalProps {
@@ -13,14 +13,49 @@ interface WordModalProps {
 const WordModal: React.FC<WordModalProps> = ({ word, isOpen, onClose }) => {
   if (!isOpen || !word) return null;
 
+  const isInCollection = isInPersonalCollection(word.id);
+
+  const handleToggleCollection = () => {
+    if (isInCollection) {
+      removeFromPersonalCollection(word.id);
+    } else {
+      addToPersonalCollection(word.id);
+    }
+    // Force re-render by triggering a state update in parent component
+    window.dispatchEvent(new CustomEvent('personalCollectionChanged'));
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-bounce-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800">{word.word}</h2>
-            <p className="text-education-blue font-medium mt-1">{word.theme}</p>
+          <div className="flex items-center space-x-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">{word.word}</h2>
+              <p className="text-education-blue font-medium mt-1">{word.theme}</p>
+            </div>
+            <button
+              onClick={handleToggleCollection}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                isInCollection
+                  ? 'bg-education-blue text-white hover:bg-blue-600'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title={isInCollection ? 'Xóa khỏi bộ sưu tập' : 'Thêm vào bộ sưu tập'}
+            >
+              {isInCollection ? (
+                <>
+                  <Bookmark className="w-4 h-4" />
+                  <span>Đã lưu</span>
+                </>
+              ) : (
+                <>
+                  <BookmarkPlus className="w-4 h-4" />
+                  <span>Lưu</span>
+                </>
+              )}
+            </button>
           </div>
           <button
             onClick={onClose}
