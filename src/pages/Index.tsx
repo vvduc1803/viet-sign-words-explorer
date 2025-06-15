@@ -6,9 +6,15 @@ import { searchWord, VocabularyItem } from '../data/vocabulary';
 import VideoPlayer from '../components/VideoPlayer';
 import TooltipSettings from '../components/TooltipSettings';
 import WordTooltip from '../components/WordTooltip';
+import UsageLimitBanner from '../components/UsageLimitBanner';
+import AuthModal from '../components/AuthModal';
+import UpgradeModal from '../components/UpgradeModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const Index = () => {
   const location = useLocation();
+  const { isLoggedIn, usageStats, updateUsage, canPerformAction } = useAuth();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResult, setSearchResult] = useState<VocabularyItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +30,9 @@ const Index = () => {
     showVideo: true,
     showSignVideo: true
   });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   // Handle URL search parameters
   useEffect(() => {
@@ -57,6 +66,11 @@ const Index = () => {
   };
 
   const handleSearchWord = (query: string) => {
+    if (!canPerformAction('searches')) {
+      setError('Đã đạt giới hạn tra cứu hôm nay. Vui lòng đăng nhập hoặc nâng cấp để tiếp tục.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
     
@@ -65,6 +79,7 @@ const Index = () => {
       if (result) {
         setSearchResult(result);
         setError('');
+        updateUsage('searches');
       } else {
         setSearchResult(null);
         setError(`Không tìm thấy từ "${query}"`);
@@ -89,6 +104,11 @@ const Index = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!canPerformAction('uploads')) {
+      setError('Đã đạt giới hạn tải lên hôm nay. Vui lòng đăng nhập hoặc nâng cấp để tiếp tục.');
+      return;
+    }
+
     const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
     
     if (!allowedTypes.includes(file.type)) {
@@ -98,6 +118,7 @@ const Index = () => {
 
     setSelectedFile(file);
     setError('');
+    updateUsage('uploads');
 
     // Simulate file reading (in real app, use appropriate libraries)
     if (file.type === 'text/plain') {
@@ -147,6 +168,17 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Usage Limit Banner */}
+        <UsageLimitBanner
+          isLoggedIn={isLoggedIn}
+          currentUsage={usageStats}
+          onLogin={() => {
+            setAuthMode('login');
+            setAuthModalOpen(true);
+          }}
+          onUpgrade={() => setUpgradeModalOpen(true)}
+        />
+
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
@@ -171,12 +203,13 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
                 className="input-field pr-12"
+                disabled={!canPerformAction('searches')}
               />
               <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
             <button
               onClick={handleSearch}
-              disabled={isLoading}
+              disabled={isLoading || !canPerformAction('searches')}
               className="btn-primary min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
@@ -208,15 +241,24 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
                 accept=".pdf,.doc,.docx,.txt"
                 onChange={handleFileUpload}
                 className="hidden"
+                disabled={!canPerformAction('uploads')}
               />
               <label
                 htmlFor="file-upload"
-                className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-education-blue hover:bg-blue-50 transition-all duration-300"
+                className={`flex items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${
+                  canPerformAction('uploads')
+                    ? 'border-gray-300 hover:border-education-blue hover:bg-blue-50'
+                    : 'border-gray-200 bg-gray-50 cursor-not-allowed'
+                }`}
               >
                 <div className="text-center">
-                  <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600">
-                    {selectedFile ? selectedFile.name : 'Chọn file PDF, DOC, DOCX hoặc kéo thả vào đây'}
+                  <FileText className={`w-8 h-8 mx-auto mb-2 ${canPerformAction('uploads') ? 'text-gray-400' : 'text-gray-300'}`} />
+                  <p className={canPerformAction('uploads') ? 'text-gray-600' : 'text-gray-400'}>
+                    {selectedFile ? selectedFile.name : 
+                     canPerformAction('uploads') 
+                       ? 'Chọn file PDF, DOC, DOCX hoặc kéo thả vào đây'
+                       : 'Đã đạt giới hạn tải lên hôm nay'
+                    }
                   </p>
                   <p className="text-sm text-gray-400 mt-1">
                     Hỗ trợ PDF, DOC, DOCX, TXT
@@ -358,6 +400,20 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
           onClose={closeTooltip}
         />
       )}
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        mode={authMode}
+        onModeChange={setAuthMode}
+      />
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={upgradeModalOpen}
+        onClose={() => setUpgradeModalOpen(false)}
+      />
     </div>
   );
 };
