@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, BookOpen, Gamepad2, PenTool, Heart } from 'lucide-react';
+import { Menu, X, Search, BookOpen, PenTool } from 'lucide-react';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +11,6 @@ const Header = () => {
     { name: 'Tra cứu từ', href: '/', icon: Search },
     { name: 'Từ điển', href: '/dictionary', icon: BookOpen },
     { name: 'Ôn tập', href: '/practice', icon: PenTool },
-    { name: 'Trò chơi', href: '/games', icon: Gamepad2 },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -51,21 +50,6 @@ const Header = () => {
             })}
           </nav>
 
-          {/* Personal Collection Button */}
-          <div className="hidden md:block">
-            <Link
-              to="/games"
-              onClick={() => {
-                // This will be handled by the Games component to show personal collection
-                window.dispatchEvent(new CustomEvent('showPersonalCollection'));
-              }}
-              className="flex items-center space-x-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-200"
-            >
-              <Heart className="w-4 h-4" />
-              <span>Bộ sưu tập</span>
-            </Link>
-          </div>
-
           {/* Mobile menu button */}
           <div className="md:hidden">
             <button
@@ -104,16 +88,6 @@ const Header = () => {
                 </Link>
               );
             })}
-            
-            {/* Mobile Personal Collection */}
-            <Link
-              to="/games"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium bg-gradient-to-r from-pink-500 to-purple-600 text-white"
-            >
-              <Heart className="w-5 h-5" />
-              <span>Bộ sưu tập</span>
-            </Link>
           </div>
         </div>
       )}

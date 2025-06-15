@@ -8,10 +8,6 @@ import Header from "./components/Header";
 import Index from "./pages/Index";
 import Dictionary from "./pages/Dictionary";
 import Practice from "./pages/Practice";
-import Games from "./pages/Games";
-import MatchGame from "./pages/MatchGame";
-import MimicGame from "./pages/MimicGame";
-import TreasureGame from "./pages/TreasureGame";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,10 +24,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/dictionary" element={<Dictionary />} />
             <Route path="/practice" element={<Practice />} />
-            <Route path="/games" element={<Games />} />
-            <Route path="/games/match" element={<MatchGame />} />
-            <Route path="/games/mimic" element={<MimicGame />} />
-            <Route path="/games/treasure" element={<TreasureGame />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
