@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, CheckCircle, XCircle, Trophy, Star, ArrowRight, Camera } from 'lucide-react';
-import { themes, getWordsByTheme, getAllWords, VocabularyItem } from '../data/vocabulary';
+import { RefreshCw, CheckCircle, XCircle, Trophy, Star, ArrowRight, Camera, ArrowLeft } from 'lucide-react';
+import { themes, getWordsByTheme, getAllWords, VocabularyItem, getPersonalCollection } from '../data/vocabulary';
 import VideoPlayer from '../components/VideoPlayer';
 import CameraPractice from '../components/CameraPractice';
+import PersonalCollection from '../components/PersonalCollection';
 
 interface Question {
   id: string;
@@ -26,14 +27,40 @@ const Practice = () => {
   const [gameFinished, setGameFinished] = useState(false);
   const [showCameraPractice, setShowCameraPractice] = useState(false);
   const [cameraScores, setCameraScores] = useState<number[]>([]);
+  const [showPersonalCollection, setShowPersonalCollection] = useState(false);
+  const [personalCollectionWords, setPersonalCollectionWords] = useState<VocabularyItem[]>([]);
 
-  const generateQuestions = (theme: string, mode: 'quiz' | 'camera') => {
-    const words = theme === 'all' ? getAllWords() : getWordsByTheme(theme);
+  // Check URL params to show personal collection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'collection') {
+      setShowPersonalCollection(true);
+    }
+  }, []);
+
+  // Load personal collection words
+  useEffect(() => {
+    setPersonalCollectionWords(getPersonalCollection());
+  }, []);
+
+  const generateQuestions = (theme: string, mode: 'quiz' | 'camera', usePersonalCollection: boolean = false) => {
+    let words: VocabularyItem[];
+    
+    if (usePersonalCollection) {
+      words = personalCollectionWords;
+      if (words.length === 0) {
+        return [];
+      }
+    } else {
+      words = theme === 'all' ? getAllWords() : getWordsByTheme(theme);
+    }
+    
     const generatedQuestions: Question[] = [];
 
     if (mode === 'camera') {
       // Tạo 5 câu hỏi camera practice
-      for (let i = 0; i < 5; i++) {
+      const questionCount = Math.min(5, words.length);
+      for (let i = 0; i < questionCount; i++) {
         const randomWord = words[Math.floor(Math.random() * words.length)];
         generatedQuestions.push({
           id: `camera${i + 1}`,
@@ -52,7 +79,8 @@ const Practice = () => {
         'complete-sequence'
       ];
 
-      for (let i = 0; i < 10; i++) {
+      const questionCount = Math.min(10, words.length);
+      for (let i = 0; i < questionCount; i++) {
         const randomWord = words[Math.floor(Math.random() * words.length)];
         const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
         
@@ -60,7 +88,7 @@ const Practice = () => {
         const wrongAnswers = words
           .filter(w => w.id !== randomWord.id)
           .sort(() => Math.random() - 0.5)
-          .slice(0, 3);
+          .slice(0, Math.min(3, words.length - 1));
 
         const options = [randomWord, ...wrongAnswers].sort(() => Math.random() - 0.5);
 
@@ -99,8 +127,13 @@ const Practice = () => {
     return generatedQuestions;
   };
 
-  const startGame = () => {
-    const newQuestions = generateQuestions(selectedTheme, practiceMode);
+  const startGame = (usePersonalCollection: boolean = false) => {
+    const newQuestions = generateQuestions(selectedTheme, practiceMode, usePersonalCollection);
+    if (newQuestions.length === 0) {
+      alert('Bộ sưu tập cá nhân của bạn chưa có từ nào. Hãy thêm từ vào bộ sưu tập trước!');
+      return;
+    }
+    
     setQuestions(newQuestions);
     setCurrentQuestion(0);
     setSelectedAnswer(null);
@@ -110,6 +143,7 @@ const Practice = () => {
     setGameStarted(true);
     setGameFinished(false);
     setCameraScores([]);
+    setShowPersonalCollection(false);
   };
 
   const selectAnswer = (wordId: string) => {
@@ -176,13 +210,28 @@ const Practice = () => {
   };
 
   const getScoreMessage = () => {
-    const totalQuestions = practiceMode === 'camera' ? 5 : 10;
+    const totalQuestions = questions.length;
     const percentage = (score / totalQuestions) * 100;
     if (percentage >= 90) return { message: "Xuất sắc! 🎉", color: "text-green-600" };
     if (percentage >= 70) return { message: "Tốt! 👏", color: "text-blue-600" };
     if (percentage >= 50) return { message: "Khá! 👍", color: "text-yellow-600" };
     return { message: "Cần cố gắng thêm! 💪", color: "text-red-600" };
   };
+
+  const handlePersonalCollectionPlayGame = (words: VocabularyItem[]) => {
+    setPersonalCollectionWords(words);
+    startGame(true);
+  };
+
+  // Show personal collection
+  if (showPersonalCollection) {
+    return (
+      <PersonalCollection
+        onBack={() => setShowPersonalCollection(false)}
+        onPlayGame={handlePersonalCollectionPlayGame}
+      />
+    );
+  }
 
   // Hiển thị camera practice modal
   if (showCameraPractice && questions[currentQuestion]) {
@@ -217,6 +266,31 @@ const Practice = () => {
               <p className="text-gray-600">
                 Chọn chế độ luyện tập và chủ đề để bắt đầu
               </p>
+            </div>
+
+            {/* Personal Collection Option */}
+            <div className="max-w-md mx-auto mb-6">
+              <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-xl text-white text-center">
+                <h3 className="font-bold mb-2">Ôn tập Bộ sưu tập cá nhân</h3>
+                <p className="text-sm mb-4 opacity-90">
+                  Ôn tập với {personalCollectionWords.length} từ đã lưu
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => setShowPersonalCollection(true)}
+                    className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Xem bộ sưu tập
+                  </button>
+                  <button
+                    onClick={() => startGame(true)}
+                    disabled={personalCollectionWords.length === 0}
+                    className="bg-white text-purple-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Ôn tập ngay
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="max-w-md mx-auto space-y-6">
@@ -271,7 +345,7 @@ const Practice = () => {
               </div>
 
               <button
-                onClick={startGame}
+                onClick={() => startGame(false)}
                 className="w-full btn-primary text-lg py-4"
               >
                 Bắt đầu luyện tập
@@ -310,7 +384,7 @@ const Practice = () => {
 
   if (gameFinished) {
     const scoreInfo = getScoreMessage();
-    const totalQuestions = practiceMode === 'camera' ? 5 : 10;
+    const totalQuestions = questions.length;
     
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -365,7 +439,7 @@ const Practice = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={startGame}
+                onClick={() => startGame(false)}
                 className="btn-primary"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
@@ -528,7 +602,7 @@ const Practice = () => {
                     )}
                     <div>
                       <div className="font-medium">{option.word}</div>
-                      <div className="text-sm opacity-75">{option.theme}</div>
+                      <div className="text-sm opacity-75">{option.category}</div>
                     </div>
                     {showResult && showCorrect && (
                       <CheckCircle className="w-5 h-5 text-green-500 ml-auto" />
