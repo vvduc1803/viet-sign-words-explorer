@@ -1,9 +1,12 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, Search, BookOpen, PenTool, Heart, User, LogOut, Star } from 'lucide-react';
+import { Menu, X, Search, BookOpen, PenTool, Heart, User, LogOut, Star, MessageSquare, Plus } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from './AuthModal';
 import UpgradeModal from './UpgradeModal';
+import FeedbackModal from './FeedbackModal';
+import ContributeModal from './ContributeModal';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +14,8 @@ const Header = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [contributeModalOpen, setContributeModalOpen] = useState(false);
   const location = useLocation();
   const { user, isLoggedIn, logout } = useAuth();
 
@@ -19,6 +24,12 @@ const Header = () => {
     { name: 'Từ điển', href: '/dictionary', icon: BookOpen },
     { name: 'Ôn tập', href: '/practice', icon: PenTool },
   ];
+
+  // Add contribution items for logged in users
+  const contributionItems = isLoggedIn ? [
+    { name: 'Góp ý', action: () => setFeedbackModalOpen(true), icon: MessageSquare },
+    { name: 'Đóng góp dữ liệu', action: () => setContributeModalOpen(true), icon: Plus },
+  ] : [];
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -74,6 +85,21 @@ const Header = () => {
                     <Icon className="w-4 h-4" />
                     <span>{item.name}</span>
                   </Link>
+                );
+              })}
+              
+              {/* Contribution Items for Desktop */}
+              {contributionItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={item.action}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{item.name}</span>
+                  </button>
                 );
               })}
             </nav>
@@ -203,6 +229,24 @@ const Header = () => {
                 );
               })}
               
+              {/* Mobile Contribution Items */}
+              {contributionItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.name}
+                    onClick={() => {
+                      item.action();
+                      setIsOpen(false);
+                    }}
+                    className="w-full text-left flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span>{item.name}</span>
+                  </button>
+                );
+              })}
+              
               {isLoggedIn ? (
                 <>
                   {/* Mobile Personal Collection */}
@@ -304,6 +348,18 @@ const Header = () => {
           setAuthMode('login');
           setAuthModalOpen(true);
         }}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+      />
+
+      {/* Contribute Modal */}
+      <ContributeModal
+        isOpen={contributeModalOpen}
+        onClose={() => setContributeModalOpen(false)}
       />
 
       {/* Click outside to close user menu */}
