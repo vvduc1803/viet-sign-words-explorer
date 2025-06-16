@@ -1,22 +1,25 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Book, Search, Dumbbell, Menu, X, Crown, User, LogOut, MessageSquare, Plus, Shield } from 'lucide-react';
+import { Book, Search, Dumbbell, Menu, X, Crown, User, LogOut, MessageSquare, Plus, Shield, Key } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from './ui/button';
 import AuthModal from './AuthModal';
 import UpgradeModal from './UpgradeModal';
 import FeedbackModal from './FeedbackModal';
 import ContributeModal from './ContributeModal';
+import ChangePasswordModal from './ChangePasswordModal';
 
 const Header = () => {
   const { user, isLoggedIn, logout } = useAuth();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password'>('login');
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const navItems = [
@@ -129,6 +132,17 @@ const Header = () => {
                         </div>
                         <div className="text-xs text-gray-600">{user?.email}</div>
                       </div>
+                      
+                      <button
+                        onClick={() => {
+                          setIsChangePasswordModalOpen(true);
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center space-x-2"
+                      >
+                        <Key className="w-4 h-4" />
+                        <span>Đổi mật khẩu</span>
+                      </button>
                       
                       <button
                         onClick={() => {
@@ -252,6 +266,17 @@ const Header = () => {
                     
                     <button
                       onClick={() => {
+                        setIsChangePasswordModalOpen(true);
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <Key className="w-4 h-4" />
+                      <span>Đổi mật khẩu</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => {
                         setIsFeedbackModalOpen(true);
                         setIsMenuOpen(false);
                       }}
@@ -319,6 +344,10 @@ const Header = () => {
       <ContributeModal 
         isOpen={isContributeModalOpen} 
         onClose={() => setIsContributeModalOpen(false)} 
+      />
+      <ChangePasswordModal 
+        isOpen={isChangePasswordModalOpen} 
+        onClose={() => setIsChangePasswordModalOpen(false)} 
       />
     </>
   );
