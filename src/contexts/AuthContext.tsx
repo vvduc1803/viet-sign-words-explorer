@@ -6,6 +6,8 @@ interface User {
   name: string;
   email: string;
   isPremium: boolean;
+  isAdmin?: boolean;
+  isActive?: boolean;
 }
 
 interface UsageStats {
@@ -91,11 +93,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    const isAdmin = email === 'admin@example.com' && password === 'admin123';
+    
     const mockUser: User = {
-      id: '1',
-      name: email.includes('test') ? 'Test User' : 'Người dùng',
+      id: isAdmin ? 'admin' : '1',
+      name: isAdmin ? 'Admin' : (email.includes('test') ? 'Test User' : 'Người dùng'),
       email: email,
-      isPremium: false
+      isPremium: isAdmin ? true : false,
+      isAdmin: isAdmin,
+      isActive: true
     };
     
     setUser(mockUser);
@@ -109,7 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: '1',
       name: name,
       email: email,
-      isPremium: false
+      isPremium: false,
+      isAdmin: false,
+      isActive: true
     };
     
     setUser(mockUser);

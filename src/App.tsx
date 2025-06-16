@@ -9,6 +9,7 @@ import Header from "./components/Header";
 import Index from "./pages/Index";
 import Dictionary from "./pages/Dictionary";
 import Practice from "./pages/Practice";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/dictionary" element={<Dictionary />} />
               <Route path="/practice" element={<Practice />} />
+              <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
