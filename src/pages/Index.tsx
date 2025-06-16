@@ -30,7 +30,7 @@ const Index = () => {
     showSignVideo: true
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password'>('login');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   // Handle URL search parameters
