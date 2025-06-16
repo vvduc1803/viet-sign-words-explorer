@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Book, Search, Dumbbell, Menu, X, Crown, User, LogOut, MessageSquare, Plus, Shield, Key } from 'lucide-react';
+import { Book, Search, Dumbbell, Menu, X, Crown, User, LogOut, MessageSquare, Plus, Shield, Key, Heart } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from './ui/button';
 import AuthModal from './AuthModal';
@@ -95,14 +95,27 @@ const Header = () => {
 
             {/* Desktop Auth Section */}
             <div className="hidden md:flex items-center space-x-4">
-              {/* Upgrade Button */}
-              <Button
-                onClick={handleUpgradeClick}
-                className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-all duration-200"
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                Nâng cấp Plus
-              </Button>
+              {/* Personal Collection - Only show when logged in */}
+              {isLoggedIn && (
+                <Link
+                  to="/collection"
+                  className="flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                >
+                  <Heart className="w-4 h-4" />
+                  <span>Bộ sưu tập</span>
+                </Link>
+              )}
+
+              {/* Upgrade Button - Only show for non-premium users */}
+              {(!isLoggedIn || !user?.isPremium) && (
+                <Button
+                  onClick={handleUpgradeClick}
+                  className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  Nâng cấp Plus
+                </Button>
+              )}
 
               {isLoggedIn ? (
                 <div className="relative">
@@ -240,19 +253,34 @@ const Header = () => {
                     <span>Quản lý</span>
                   </Link>
                 )}
+
+                {/* Personal Collection - Mobile */}
+                {isLoggedIn && (
+                  <Link
+                    to="/collection"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+                  >
+                    <Heart className="w-4 h-4" />
+                    <span>Bộ sưu tập</span>
+                  </Link>
+                )}
               </nav>
               
               <div className="mt-4 pt-4 border-t space-y-2">
-                <Button
-                  onClick={() => {
-                    handleUpgradeClick();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-medium"
-                >
-                  <Crown className="w-4 h-4 mr-2" />
-                  Nâng cấp Plus
-                </Button>
+                {/* Upgrade Button - Mobile - Only show for non-premium users */}
+                {(!isLoggedIn || !user?.isPremium) && (
+                  <Button
+                    onClick={() => {
+                      handleUpgradeClick();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white font-medium"
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Nâng cấp Plus
+                  </Button>
+                )}
                 
                 {isLoggedIn ? (
                   <div className="space-y-2">
