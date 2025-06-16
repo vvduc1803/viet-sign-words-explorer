@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Book, Search, Dumbbell, Menu, X, Crown, User, LogOut, MessageSquare, Plus, Shield } from 'lucide-react';
@@ -14,6 +13,7 @@ const Header = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
@@ -29,10 +29,16 @@ const Header = () => {
 
   const handleUpgradeClick = () => {
     if (!isLoggedIn) {
+      setAuthMode('login');
       setIsAuthModalOpen(true);
     } else {
       setIsUpgradeModalOpen(true);
     }
+  };
+
+  const handleAuthClick = () => {
+    setAuthMode('login');
+    setIsAuthModalOpen(true);
   };
 
   return (
@@ -161,7 +167,7 @@ const Header = () => {
                 </div>
               ) : (
                 <Button
-                  onClick={() => setIsAuthModalOpen(true)}
+                  onClick={handleAuthClick}
                   variant="outline"
                 >
                   Đăng nhập
@@ -280,7 +286,7 @@ const Header = () => {
                 ) : (
                   <Button
                     onClick={() => {
-                      setIsAuthModalOpen(true);
+                      handleAuthClick();
                       setIsMenuOpen(false);
                     }}
                     variant="outline"
@@ -298,7 +304,9 @@ const Header = () => {
       {/* Modals */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+        onClose={() => setIsAuthModalOpen(false)}
+        mode={authMode}
+        onModeChange={setAuthMode}
       />
       <UpgradeModal 
         isOpen={isUpgradeModalOpen} 
