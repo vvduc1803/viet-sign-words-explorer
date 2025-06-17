@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -18,6 +17,14 @@ interface UsageStats {
   lastReset: string;
 }
 
+interface PaymentSubmission {
+  accountNumber: string;
+  bankName: string;
+  transferImage: File;
+  amount: number;
+  userId: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
@@ -28,6 +35,9 @@ interface AuthContextType {
   updateUsage: (type: 'searches' | 'uploads' | 'practices' | 'savedWords', increment?: number) => void;
   canPerformAction: (type: 'searches' | 'uploads' | 'practices' | 'savedWords') => boolean;
   upgrade: () => void;
+  submitPayment: (payment: PaymentSubmission) => Promise<void>;
+  approvePayment: (userId: string) => Promise<void>;
+  rejectPayment: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -157,6 +167,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const submitPayment = async (payment: PaymentSubmission) => {
+    // Simulate API call to submit payment
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log('Payment submitted:', {
+      ...payment,
+      transferImage: payment.transferImage.name
+    });
+    
+    // In a real app, this would upload the image and save payment data
+  };
+
+  const approvePayment = async (userId: string) => {
+    // Simulate API call to approve payment and upgrade user
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // If it's the current user, upgrade them
+    if (user && user.id === userId) {
+      setUser({ ...user, isPremium: true });
+    }
+    
+    console.log('Payment approved for user:', userId);
+  };
+
+  const rejectPayment = async (userId: string) => {
+    // Simulate API call to reject payment
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    console.log('Payment rejected for user:', userId);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -167,7 +208,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       updateUsage,
       canPerformAction,
-      upgrade
+      upgrade,
+      submitPayment,
+      approvePayment,
+      rejectPayment
     }}>
       {children}
     </AuthContext.Provider>
