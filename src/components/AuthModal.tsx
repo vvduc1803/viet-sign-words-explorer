@@ -1,23 +1,26 @@
 
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { X, Mail, Lock, User, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'login' | 'register' | 'forgot-password';
-  onModeChange: (mode: 'login' | 'register' | 'forgot-password') => void;
+  mode: 'login' | 'register' | 'forgot-password' | 'reset-password';
+  onModeChange: (mode: 'login' | 'register' | 'forgot-password' | 'reset-password') => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChange }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     name: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
   });
   const { login, register } = useAuth();
 
@@ -31,16 +34,29 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
       if (mode === 'login') {
         await login(formData.email, formData.password);
         onClose();
-        setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+        setFormData({ email: '', password: '', name: '', confirmPassword: '', newPassword: '', confirmNewPassword: '' });
       } else if (mode === 'register') {
         await register(formData.name, formData.email, formData.password);
         onClose();
-        setFormData({ email: '', password: '', name: '', confirmPassword: '' });
+        setFormData({ email: '', password: '', name: '', confirmPassword: '', newPassword: '', confirmNewPassword: '' });
       } else if (mode === 'forgot-password') {
-        // Simulate forgot password
+        // Simulate forgot password email sending
         await new Promise(resolve => setTimeout(resolve, 1000));
-        alert('Đã gửi email khôi phục mật khẩu!');
+        setEmailSent(true);
+        setTimeout(() => {
+          setEmailSent(false);
+          onModeChange('reset-password');
+        }, 2000);
+      } else if (mode === 'reset-password') {
+        // Simulate password reset
+        if (formData.newPassword !== formData.confirmNewPassword) {
+          alert('Mật khẩu xác nhận không khớp!');
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        alert('Đặt lại mật khẩu thành công!');
         onModeChange('login');
+        setFormData({ email: '', password: '', name: '', confirmPassword: '', newPassword: '', confirmNewPassword: '' });
       }
     } catch (error) {
       console.error('Auth error:', error);
@@ -72,6 +88,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
       case 'login': return 'Đăng nhập';
       case 'register': return 'Đăng ký';
       case 'forgot-password': return 'Quên mật khẩu';
+      case 'reset-password': return 'Đặt lại mật khẩu';
+    }
+  };
+
+  const handleBackClick = () => {
+    if (mode === 'forgot-password' || mode === 'reset-password') {
+      onModeChange('login');
     }
   };
 
@@ -81,9 +104,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
-            {mode === 'forgot-password' && (
+            {(mode === 'forgot-password' || mode === 'reset-password') && (
               <button
-                onClick={() => onModeChange('login')}
+                onClick={handleBackClick}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors duration-300"
               >
                 <ArrowLeft className="w-4 h-4 text-gray-600" />
@@ -103,7 +126,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
 
         {/* Content */}
         <div className="p-6">
-          {mode !== 'forgot-password' && (
+          {mode === 'forgot-password' && emailSent && (
+            <div className="mb-6 p-4 bg-green-50 rounded-xl flex items-center">
+              <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+              <div>
+                <p className="text-green-800 font-medium">Email đã được gửi!</p>
+                <p className="text-green-600 text-sm">Chuyển đến trang đặt lại mật khẩu...</p>
+              </div>
+            </div>
+          )}
+
+          {mode !== 'forgot-password' && mode !== 'reset-password' && (
             /* Quick Test Login */
             <div className="mb-6 p-4 bg-blue-50 rounded-xl">
               <h3 className="font-medium text-blue-800 mb-2">🧪 Demo/Test</h3>
@@ -133,19 +166,71 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
               </div>
             )}
 
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-            </div>
+            {(mode === 'forgot-password' || mode === 'reset-password') && (
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                  disabled={mode === 'reset-password'}
+                />
+              </div>
+            )}
 
-            {mode !== 'forgot-password' && (
+            {(mode === 'login' || mode === 'register') && (
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+            )}
+
+            {mode === 'reset-password' && (
+              <>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Mật khẩu mới"
+                    value={formData.newPassword}
+                    onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+                    className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Xác nhận mật khẩu mới"
+                    value={formData.confirmNewPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmNewPassword: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {(mode === 'login' || mode === 'register') && (
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
@@ -182,13 +267,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || emailSent}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 disabled:opacity-50"
             >
               {isLoading ? 'Đang xử lý...' : (
                 mode === 'login' ? 'Đăng nhập' : 
                 mode === 'register' ? 'Đăng ký' : 
-                'Gửi email khôi phục'
+                mode === 'forgot-password' ? 'Gửi email khôi phục' :
+                'Đặt lại mật khẩu'
               )}
             </button>
           </form>
@@ -204,7 +290,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, mode, onModeChan
             </div>
           )}
 
-          {mode !== 'forgot-password' && (
+          {(mode === 'login' || mode === 'register') && (
             <>
               {/* Divider */}
               <div className="my-6 flex items-center">
