@@ -1,8 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { themes, VocabularyItem, getPersonalCollection } from '../data/vocabulary';
+import { HierarchicalCategory, hierarchicalCategories, getWordsFromCategory } from '../data/hierarchicalVocabulary';
 import CameraPractice from '../components/CameraPractice';
 import PersonalCollection from '../components/PersonalCollection';
+import TreeCategorySelector from '../components/TreeCategorySelector';
 import PracticeSetup from '../components/practice/PracticeSetup';
 import PracticeProgress from '../components/practice/PracticeProgress';
 import QuizQuestion from '../components/practice/QuizQuestion';
@@ -26,6 +27,9 @@ const Practice = () => {
   const [cameraScores, setCameraScores] = useState<number[]>([]);
   const [showPersonalCollection, setShowPersonalCollection] = useState(false);
   const [personalCollectionWords, setPersonalCollectionWords] = useState<VocabularyItem[]>([]);
+  const [currentView, setCurrentView] = useState<'selector' | 'setup' | 'game'>('selector');
+  const [selectedCategory, setSelectedCategory] = useState<HierarchicalCategory | null>(null);
+  const [categoryWords, setCategoryWords] = useState<VocabularyItem[]>([]);
 
   // Check URL params to show personal collection
   useEffect(() => {
@@ -40,10 +44,74 @@ const Practice = () => {
     setPersonalCollectionWords(getPersonalCollection());
   }, []);
 
-  const startGame = (usePersonalCollection: boolean = false) => {
-    const newQuestions = generateQuestions(selectedTheme, practiceMode, usePersonalCollection, personalCollectionWords);
+  const handleCategorySelection = (selection: {
+    type: 'category' | 'personal' | 'all';
+    categoryId?: string;
+    categoryName?: string;
+  }) => {
+    if (selection.type === 'category' && selection.categoryId) {
+      // Find the selected category
+      const findCategory = (cats: HierarchicalCategory[], id: string): HierarchicalCategory | null => {
+        for (const cat of cats) {
+          if (cat.id === selection.categoryId) return cat;
+          if (cat.children) {
+            const found = findCategory(cat.children, id);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const category = findCategory(hierarchicalCategories, selection.categoryId);
+      if (category) {
+        setSelectedCategory(category);
+        const words = getWordsFromCategory(hierarchicalCategories, selection.categoryId);
+        setCategoryWords(words);
+        setSelectedTheme(category.name);
+        setCurrentView('setup');
+      }
+    } else if (selection.type === 'all') {
+      setSelectedTheme('all');
+      setCategoryWords([]);
+      setCurrentView('setup');
+    } else if (selection.type === 'personal') {
+      setShowPersonalCollection(true);
+      setCurrentView('selector');
+    }
+  };
+
+  const startGame = (usePersonalCollection: boolean = false, useHierarchicalWords: boolean = false) => {
+    let wordsToUse: VocabularyItem[];
+    
+    if (usePersonalCollection) {
+      wordsToUse = personalCollectionWords;
+    } else if (useHierarchicalWords && categoryWords.length > 0) {
+      wordsToUse = categoryWords;
+    } else {
+      // Use legacy method
+      const newQuestions = generateQuestions(selectedTheme, practiceMode, usePersonalCollection, personalCollectionWords);
+      if (newQuestions.length === 0) {
+        alert('Bộ sưu tập cá nhân của bạn chưa có từ nào. Hãy thêm từ vào bộ sưu tập trước!');
+        return;
+      }
+      setQuestions(newQuestions);
+      setCurrentQuestion(0);
+      setSelectedAnswer(null);
+      setShowResult(false);
+      setScore(0);
+      setAnswered(new Array(newQuestions.length).fill(false));
+      setGameStarted(true);
+      setGameFinished(false);
+      setCameraScores([]);
+      setShowPersonalCollection(false);
+      setCurrentView('game');
+      return;
+    }
+
+    // Generate questions from hierarchical words
+    const newQuestions = generateQuestionsFromWords(wordsToUse, practiceMode);
     if (newQuestions.length === 0) {
-      alert('Bộ sưu tập cá nhân của bạn chưa có từ nào. Hãy thêm từ vào bộ sưu tập trước!');
+      alert('Danh mục này chưa có từ nào để luyện tập!');
       return;
     }
     
@@ -57,6 +125,77 @@ const Practice = () => {
     setGameFinished(false);
     setCameraScores([]);
     setShowPersonalCollection(false);
+    setCurrentView('game');
+  };
+
+  const generateQuestionsFromWords = (words: VocabularyItem[], mode: 'quiz' | 'camera'): Question[] => {
+    const generatedQuestions: Question[] = [];
+
+    if (mode === 'camera') {
+      const questionCount = Math.min(5, words.length);
+      for (let i = 0; i < questionCount; i++) {
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+        generatedQuestions.push({
+          id: `camera${i + 1}`,
+          type: 'camera-practice',
+          question: `Thực hiện ngôn ngữ ký hiệu cho từ: "${randomWord.word}"`,
+          correctAnswer: randomWord,
+          options: []
+        });
+      }
+    } else {
+      const questionTypes: Question['type'][] = [
+        'image-to-sign',
+        'video-to-sign', 
+        'sign-to-image',
+        'complete-sequence'
+      ];
+
+      const questionCount = Math.min(10, words.length);
+      for (let i = 0; i < questionCount; i++) {
+        const randomWord = words[Math.floor(Math.random() * words.length)];
+        const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+        
+        const wrongAnswers = words
+          .filter(w => w.id !== randomWord.id)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, Math.min(3, words.length - 1));
+
+        const options = [randomWord, ...wrongAnswers].sort(() => Math.random() - 0.5);
+
+        let questionText = '';
+        let media = '';
+
+        switch (questionType) {
+          case 'image-to-sign':
+            questionText = 'Chọn video ngôn ngữ ký hiệu phù hợp với hình ảnh:';
+            media = randomWord.image;
+            break;
+          case 'video-to-sign':
+            questionText = 'Chọn video ngôn ngữ ký hiệu phù hợp với video minh họa:';
+            media = randomWord.video || randomWord.image;
+            break;
+          case 'sign-to-image':
+            questionText = 'Chọn hình ảnh phù hợp với video ngôn ngữ ký hiệu:';
+            media = randomWord.sign_language_video || randomWord.image;
+            break;
+          case 'complete-sequence':
+            questionText = `Chọn từ thích hợp để hoàn thành câu: "Tôi thấy _____ trong vườn"`;
+            break;
+        }
+
+        generatedQuestions.push({
+          id: `q${i + 1}`,
+          type: questionType,
+          question: questionText,
+          correctAnswer: randomWord,
+          options,
+          media
+        });
+      }
+    }
+
+    return generatedQuestions;
   };
 
   const selectAnswer = (wordId: string) => {
@@ -85,7 +224,6 @@ const Practice = () => {
       setSelectedAnswer(null);
       setShowResult(false);
       
-      // Hiển thị camera practice nếu là loại camera-practice
       if (questions[currentQuestion + 1].type === 'camera-practice') {
         setShowCameraPractice(true);
       }
@@ -98,7 +236,6 @@ const Practice = () => {
     const newCameraScores = [...cameraScores, cameraScore];
     setCameraScores(newCameraScores);
     
-    // Tính điểm cho camera practice (70+ = pass)
     if (cameraScore >= 70) {
       setScore(score + 1);
     }
@@ -120,6 +257,7 @@ const Practice = () => {
     setScore(0);
     setAnswered([]);
     setCameraScores([]);
+    setCurrentView('selector');
   };
 
   const handlePersonalCollectionPlayGame = (words: VocabularyItem[]) => {
@@ -137,6 +275,16 @@ const Practice = () => {
     );
   }
 
+  // Show tree category selector
+  if (currentView === 'selector') {
+    return (
+      <TreeCategorySelector
+        onSelectionComplete={handleCategorySelection}
+        mode="practice"
+      />
+    );
+  }
+
   // Hiển thị camera practice modal
   if (showCameraPractice && questions[currentQuestion]) {
     return (
@@ -148,7 +296,8 @@ const Practice = () => {
     );
   }
 
-  if (!gameStarted) {
+  // Show practice setup
+  if (currentView === 'setup' && !gameStarted) {
     return (
       <PracticeSetup
         selectedTheme={selectedTheme}
@@ -157,8 +306,11 @@ const Practice = () => {
         setPracticeMode={setPracticeMode}
         themes={themes}
         personalCollectionWords={personalCollectionWords}
-        onStartGame={startGame}
+        onStartGame={() => startGame(false, true)}
         onShowPersonalCollection={() => setShowPersonalCollection(true)}
+        onBack={() => setCurrentView('selector')}
+        selectedCategory={selectedCategory}
+        categoryWords={categoryWords}
       />
     );
   }
@@ -170,7 +322,7 @@ const Practice = () => {
         totalQuestions={questions.length}
         practiceMode={practiceMode}
         cameraScores={cameraScores}
-        onStartGame={() => startGame(false)}
+        onStartGame={() => startGame(false, categoryWords.length > 0)}
         onResetGame={resetGame}
       />
     );
@@ -179,7 +331,7 @@ const Practice = () => {
   const currentQ = questions[currentQuestion];
 
   // Camera practice question
-  if (currentQ.type === 'camera-practice') {
+  if (currentQ?.type === 'camera-practice') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -198,29 +350,33 @@ const Practice = () => {
   }
 
   // Regular quiz question
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PracticeProgress
-          currentQuestion={currentQuestion}
-          totalQuestions={questions.length}
-          score={score}
-        />
-        <QuizQuestion
-          question={currentQ}
-          selectedAnswer={selectedAnswer}
-          showResult={showResult}
-          answered={answered[currentQuestion]}
-          selectedTheme={selectedTheme}
-          practiceMode={practiceMode}
-          onSelectAnswer={selectAnswer}
-          onCheckAnswer={checkAnswer}
-          onNextQuestion={nextQuestion}
-          isLastQuestion={currentQuestion >= questions.length - 1}
-        />
+  if (currentQ) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <PracticeProgress
+            currentQuestion={currentQuestion}
+            totalQuestions={questions.length}
+            score={score}
+          />
+          <QuizQuestion
+            question={currentQ}
+            selectedAnswer={selectedAnswer}
+            showResult={showResult}
+            answered={answered[currentQuestion]}
+            selectedTheme={selectedTheme}
+            practiceMode={practiceMode}
+            onSelectAnswer={selectAnswer}
+            onCheckAnswer={checkAnswer}
+            onNextQuestion={nextQuestion}
+            isLastQuestion={currentQuestion >= questions.length - 1}
+          />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 };
 
 export default Practice;

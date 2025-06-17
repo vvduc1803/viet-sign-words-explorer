@@ -6,7 +6,8 @@ export const generateQuestions = (
   theme: string, 
   mode: 'quiz' | 'camera', 
   usePersonalCollection: boolean = false, 
-  personalCollectionWords: VocabularyItem[] = []
+  personalCollectionWords: VocabularyItem[] = [],
+  hierarchicalWords: VocabularyItem[] = []
 ): Question[] => {
   let words: VocabularyItem[];
   
@@ -15,6 +16,8 @@ export const generateQuestions = (
     if (words.length === 0) {
       return [];
     }
+  } else if (hierarchicalWords.length > 0) {
+    words = hierarchicalWords;
   } else {
     words = theme === 'all' ? getAllWords() : getWordsByTheme(theme);
   }
