@@ -1,11 +1,7 @@
-
 import React, { useState } from 'react';
 import { Search, Grid, List, Filter, BookmarkPlus, Bookmark } from 'lucide-react';
 import { themes, getWordsByTheme, getAllWords, VocabularyItem, isInPersonalCollection, addToPersonalCollection, removeFromPersonalCollection } from '../data/vocabulary';
-import { HierarchicalCategory, hierarchicalCategories, getWordsFromCategory } from '../data/hierarchicalVocabulary';
 import WordModal from '../components/WordModal';
-import TreeCategorySelector from '../components/TreeCategorySelector';
-import HierarchicalVocabularyBrowser from '../components/HierarchicalVocabularyBrowser';
 
 const Dictionary = () => {
   const [selectedTheme, setSelectedTheme] = useState<string>('all');
@@ -14,9 +10,6 @@ const Dictionary = () => {
   const [selectedWord, setSelectedWord] = useState<VocabularyItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [currentView, setCurrentView] = useState<'selector' | 'browser' | 'legacy'>('selector');
-  const [selectedCategory, setSelectedCategory] = useState<HierarchicalCategory | null>(null);
-  const [categoryWords, setCategoryWords] = useState<VocabularyItem[]>([]);
 
   // Listen for personal collection changes
   React.useEffect(() => {
@@ -27,40 +20,6 @@ const Dictionary = () => {
     window.addEventListener('personalCollectionChanged', handleCollectionChange);
     return () => window.removeEventListener('personalCollectionChanged', handleCollectionChange);
   }, []);
-
-  const handleCategorySelection = (selection: {
-    type: 'category' | 'personal' | 'all';
-    categoryId?: string;
-    categoryName?: string;
-  }) => {
-    if (selection.type === 'category' && selection.categoryId) {
-      // Find the selected category
-      const findCategory = (cats: HierarchicalCategory[], id: string): HierarchicalCategory | null => {
-        for (const cat of cats) {
-          if (cat.id === selection.categoryId) return cat;
-          if (cat.children) {
-            const found = findCategory(cat.children, id);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-
-      const category = findCategory(hierarchicalCategories, selection.categoryId);
-      if (category) {
-        setSelectedCategory(category);
-        const words = getWordsFromCategory(hierarchicalCategories, selection.categoryId);
-        setCategoryWords(words);
-        setCurrentView('browser');
-      }
-    } else if (selection.type === 'all') {
-      setSelectedTheme('all');
-      setCurrentView('legacy');
-    } else if (selection.type === 'personal') {
-      setCurrentView('legacy');
-      // Handle personal collection in legacy view
-    }
-  };
 
   const getFilteredWords = () => {
     let words = selectedTheme === 'all' ? getAllWords() : getWordsByTheme(selectedTheme);
@@ -99,28 +58,6 @@ const Dictionary = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  // Show tree category selector
-  if (currentView === 'selector') {
-    return (
-      <TreeCategorySelector
-        onSelectionComplete={handleCategorySelection}
-        mode="dictionary"
-      />
-    );
-  }
-
-  // Show hierarchical browser
-  if (currentView === 'browser' && selectedCategory) {
-    return (
-      <HierarchicalVocabularyBrowser
-        category={selectedCategory}
-        words={categoryWords}
-        onBack={() => setCurrentView('selector')}
-      />
-    );
-  }
-
-  // Legacy view (original dictionary)
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -129,17 +66,9 @@ const Dictionary = () => {
           <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
             Từ điển Theo Chủ đề
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Khám phá từ vựng tiếng Việt được phân loại theo chủ đề với hình ảnh và video minh họa
           </p>
-          
-          {/* Switch to Tree View */}
-          <button
-            onClick={() => setCurrentView('selector')}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg"
-          >
-            🌳 Chuyển sang chế độ cây phân cấp
-          </button>
         </div>
 
         {/* Controls */}

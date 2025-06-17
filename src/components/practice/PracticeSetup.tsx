@@ -1,8 +1,7 @@
 
 import React from 'react';
-import { ArrowLeft, Play, Brain, Camera, Users, Star, BookOpen } from 'lucide-react';
+import { Trophy, CheckCircle, Camera, Star } from 'lucide-react';
 import { VocabularyItem } from '../../data/vocabulary';
-import { HierarchicalCategory } from '../../data/hierarchicalVocabulary';
 
 interface PracticeSetupProps {
   selectedTheme: string;
@@ -11,198 +10,151 @@ interface PracticeSetupProps {
   setPracticeMode: (mode: 'quiz' | 'camera') => void;
   themes: string[];
   personalCollectionWords: VocabularyItem[];
-  onStartGame: () => void;
+  onStartGame: (usePersonalCollection: boolean) => void;
   onShowPersonalCollection: () => void;
-  onBack?: () => void;
-  selectedCategory?: HierarchicalCategory | null;
-  categoryWords?: VocabularyItem[];
 }
 
 const PracticeSetup: React.FC<PracticeSetupProps> = ({
   selectedTheme,
+  setSelectedTheme,
   practiceMode,
   setPracticeMode,
+  themes,
   personalCollectionWords,
   onStartGame,
   onShowPersonalCollection,
-  onBack,
-  selectedCategory,
-  categoryWords = []
 }) => {
-  const getCategoryIcon = (category?: HierarchicalCategory) => {
-    return category?.icon || '📚';
-  };
-
-  const getBreadcrumbPath = (categoryId: string): string[] => {
-    return categoryId.split('/');
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 text-white hover:bg-white/30 transition-all duration-300"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-medium">Quay lại</span>
-            </button>
-          )}
-          
-          <div className="text-center flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              🎯 Cài đặt luyện tập
-            </h1>
-            {selectedCategory ? (
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 max-w-md mx-auto">
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-2xl mr-2">{getCategoryIcon(selectedCategory)}</span>
-                  <h2 className="text-xl font-semibold text-white">{selectedCategory.name}</h2>
-                </div>
-                <div className="text-white/80 text-sm">
-                  {getBreadcrumbPath(selectedCategory.id).join(' > ')}
-                </div>
-                <div className="text-white/90 text-lg font-medium mt-1">
-                  {categoryWords.length} từ vựng có sẵn
-                </div>
-              </div>
-            ) : (
-              <p className="text-white/90 text-lg">
-                Chọn chế độ luyện tập phù hợp với bạn
-              </p>
-            )}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
+            Bài tập Ôn tập
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Luyện tập nhận biết từ vựng và ngôn ngữ ký hiệu thông qua các câu hỏi trắc nghiệm hoặc thực hành với camera
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl p-8 animate-slide-up">
+          <div className="text-center mb-8">
+            <Trophy className="w-16 h-16 text-education-orange mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Sẵn sàng thử thách?
+            </h2>
+            <p className="text-gray-600">
+              Chọn chế độ luyện tập và chủ đề để bắt đầu
+            </p>
           </div>
-          
-          <div className="w-24"></div>
-        </div>
 
-        {/* Practice Mode Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <button
-            onClick={() => setPracticeMode('quiz')}
-            className={`p-8 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
-              practiceMode === 'quiz'
-                ? 'bg-white shadow-2xl text-gray-800'
-                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
-            }`}
-          >
-            <div className="text-center">
-              <Brain className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-2">Quiz Trắc nghiệm</h3>
-              <p className="text-sm opacity-80">
-                Trả lời câu hỏi về hình ảnh và video ngôn ngữ ký hiệu
+          {/* Personal Collection Option */}
+          <div className="max-w-md mx-auto mb-6">
+            <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-xl text-white text-center">
+              <h3 className="font-bold mb-2">Ôn tập Bộ sưu tập cá nhân</h3>
+              <p className="text-sm mb-4 opacity-90">
+                Ôn tập với {personalCollectionWords.length} từ đã lưu
               </p>
-              <div className="mt-4 flex items-center justify-center space-x-4 text-sm">
-                <span className="flex items-center">
-                  <Star className="w-4 h-4 mr-1" />
-                  10 câu hỏi
-                </span>
-                <span className="flex items-center">
-                  <BookOpen className="w-4 h-4 mr-1" />
-                  Đa dạng
-                </span>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={onShowPersonalCollection}
+                  className="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors"
+                >
+                  Xem bộ sưu tập
+                </button>
+                <button
+                  onClick={() => onStartGame(true)}
+                  disabled={personalCollectionWords.length === 0}
+                  className="bg-white text-purple-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Ôn tập ngay
+                </button>
               </div>
             </div>
-          </button>
+          </div>
 
-          <button
-            onClick={() => setPracticeMode('camera')}
-            className={`p-8 rounded-2xl transition-all duration-300 transform hover:scale-105 ${
-              practiceMode === 'camera'
-                ? 'bg-white shadow-2xl text-gray-800'
-                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
-            }`}
-          >
-            <div className="text-center">
-              <Camera className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-2">Thực hành Camera</h3>
-              <p className="text-sm opacity-80">
-                Sử dụng camera để thực hiện ngôn ngữ ký hiệu
-              </p>
-              <div className="mt-4 flex items-center justify-center space-x-4 text-sm">
-                <span className="flex items-center">
-                  <Star className="w-4 h-4 mr-1" />
-                  5 bài tập
-                </span>
-                <span className="flex items-center">
-                  <Camera className="w-4 h-4 mr-1" />
-                  Tương tác
-                </span>
+          <div className="max-w-md mx-auto space-y-6">
+            {/* Practice Mode Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Chế độ luyện tập
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPracticeMode('quiz')}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                    practiceMode === 'quiz' 
+                      ? 'border-education-blue bg-blue-50 text-education-blue' 
+                      : 'border-gray-200 hover:border-education-blue'
+                  }`}
+                >
+                  <CheckCircle className="w-6 h-6 mb-2" />
+                  <div className="font-medium">Trắc nghiệm</div>
+                  <div className="text-sm opacity-75">10 câu hỏi</div>
+                </button>
+                <button
+                  onClick={() => setPracticeMode('camera')}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                    practiceMode === 'camera' 
+                      ? 'border-education-blue bg-blue-50 text-education-blue' 
+                      : 'border-gray-200 hover:border-education-blue'
+                  }`}
+                >
+                  <Camera className="w-6 h-6 mb-2" />
+                  <div className="font-medium">Thực hành Camera</div>
+                  <div className="text-sm opacity-75">5 bài tập</div>
+                </button>
               </div>
             </div>
-          </button>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {/* Start Game */}
-          <button
-            onClick={onStartGame}
-            disabled={categoryWords.length === 0 && selectedCategory}
-            className="bg-gradient-to-r from-green-500 to-blue-500 text-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <div className="text-center">
-              <Play className="w-8 h-8 mx-auto mb-3" />
-              <h3 className="text-xl font-bold mb-2">Bắt đầu luyện tập</h3>
-              <p className="text-sm opacity-90">
-                {selectedCategory 
-                  ? `Luyện tập với ${categoryWords.length} từ vựng`
-                  : `Chế độ ${practiceMode === 'quiz' ? 'trắc nghiệm' : 'camera'}`
-                }
+            {/* Theme Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Chọn chủ đề
+              </label>
+              <select
+                value={selectedTheme}
+                onChange={(e) => setSelectedTheme(e.target.value)}
+                className="input-field"
+              >
+                <option value="all">Tất cả chủ đề</option>
+                {themes.map(theme => (
+                  <option key={theme} value={theme}>{theme}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={() => onStartGame(false)}
+              className="w-full btn-primary text-lg py-4"
+            >
+              Bắt đầu luyện tập
+            </button>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="text-center p-6 bg-blue-50 rounded-xl">
+              <CheckCircle className="w-8 h-8 text-education-blue mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-800 mb-2">Trắc nghiệm</h3>
+              <p className="text-sm text-gray-600">
+                4 loại câu hỏi với hình ảnh và video
               </p>
             </div>
-          </button>
-
-          {/* Personal Collection */}
-          <button
-            onClick={onShowPersonalCollection}
-            disabled={personalCollectionWords.length === 0}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 text-white p-6 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <div className="text-center">
-              <Users className="w-8 h-8 mx-auto mb-3" />
-              <h3 className="text-xl font-bold mb-2">Bộ sưu tập cá nhân</h3>
-              <p className="text-sm opacity-90">
-                {personalCollectionWords.length} từ đã lưu
+            <div className="text-center p-6 bg-green-50 rounded-xl">
+              <Camera className="w-8 h-8 text-education-green mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-800 mb-2">Thực hành Camera</h3>
+              <p className="text-sm text-gray-600">
+                Nhận diện cử chỉ thực tế qua AI
               </p>
             </div>
-          </button>
-        </div>
-
-        {/* Mode Description */}
-        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-white">
-          <h3 className="text-lg font-bold mb-3 flex items-center">
-            {practiceMode === 'quiz' ? (
-              <>
-                <Brain className="w-5 h-5 mr-2" />
-                Về chế độ Quiz Trắc nghiệm
-              </>
-            ) : (
-              <>
-                <Camera className="w-5 h-5 mr-2" />
-                Về chế độ Thực hành Camera
-              </>
-            )}
-          </h3>
-          
-          {practiceMode === 'quiz' ? (
-            <div className="space-y-2 text-white/90">
-              <p>• Các dạng câu hỏi: Hình ảnh → Ký hiệu, Video → Ký hiệu, Ký hiệu → Hình ảnh</p>
-              <p>• Mỗi câu hỏi có 4 lựa chọn, chọn đáp án đúng nhất</p>
-              <p>• Xem kết quả ngay sau khi trả lời</p>
-              <p>• Thống kê điểm số và độ chính xác cuối bài</p>
+            <div className="text-center p-6 bg-purple-50 rounded-xl">
+              <Star className="w-8 h-8 text-education-purple mx-auto mb-3" />
+              <h3 className="font-semibold text-gray-800 mb-2">Phản hồi tức thì</h3>
+              <p className="text-sm text-gray-600">
+                Chấm điểm và gợi ý cải thiện
+              </p>
             </div>
-          ) : (
-            <div className="space-y-2 text-white/90">
-              <p>• Sử dụng camera để nhận diện cử chỉ tay của bạn</p>
-              <p>• Thực hiện ngôn ngữ ký hiệu theo từ được yêu cầu</p>
-              <p>• AI sẽ đánh giá độ chính xác của động tác</p>
-              <p>• Điểm số từ 0-100, cần đạt ≥70 điểm để pass</p>
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
