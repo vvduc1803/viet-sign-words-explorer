@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AlertTriangle, Heart, Zap } from 'lucide-react';
+import { AlertTriangle, Zap } from 'lucide-react';
 
 interface UsageLimitBannerProps {
   isLoggedIn: boolean;
@@ -47,10 +47,10 @@ const UsageLimitBanner: React.FC<UsageLimitBannerProps> = ({
       <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Heart className="w-5 h-5 text-green-600 mr-3" />
+            <Zap className="w-5 h-5 text-green-600 mr-3" />
             <div>
-              <h3 className="font-semibold text-green-800">Cảm ơn bạn đã ủng hộ!</h3>
-              <p className="text-green-600 text-sm">Bạn đang giúp xây dựng cộng đồng giao tiếp không rào cản</p>
+              <h3 className="font-semibold text-green-800">Tài khoản Premium</h3>
+              <p className="text-green-600 text-sm">Cảm ơn bạn đã ủng hộ dự án!</p>
             </div>
           </div>
           <div className="text-green-600 font-medium">Không giới hạn</div>
@@ -148,10 +148,10 @@ const UsageLimitBanner: React.FC<UsageLimitBannerProps> = ({
           )}
           <button
             onClick={onUpgrade}
-            className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center space-x-1"
+            className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center space-x-1"
           >
-            <Heart className="w-4 h-4" />
-            <span>Ủng hộ dự án</span>
+            <Zap className="w-4 h-4" />
+            <span>Nâng cấp Plus</span>
           </button>
         </div>
       </div>

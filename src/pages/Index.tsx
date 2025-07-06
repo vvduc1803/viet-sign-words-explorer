@@ -7,7 +7,6 @@ import TooltipSettings from '../components/TooltipSettings';
 import WordTooltip from '../components/WordTooltip';
 import UsageLimitBanner from '../components/UsageLimitBanner';
 import AuthModal from '../components/AuthModal';
-import DonationModal from '../components/DonationModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const Index = () => {
@@ -31,7 +30,6 @@ const Index = () => {
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>('login');
-  const [donationModalOpen, setDonationModalOpen] = useState(false);
 
   // Handle URL search parameters
   useEffect(() => {
@@ -164,8 +162,12 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
     window.getSelection()?.removeAllRanges();
   };
 
-  const handleDonateClick = () => {
-    setDonationModalOpen(true);
+  const handleUpgradeClick = () => {
+    // This will be handled by the Header component now
+    if (!isLoggedIn) {
+      setAuthMode('login');
+      setAuthModalOpen(true);
+    }
   };
 
   return (
@@ -180,7 +182,7 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
             setAuthMode('login');
             setAuthModalOpen(true);
           }}
-          onUpgrade={handleDonateClick}
+          onUpgrade={handleUpgradeClick}
         />
 
         {/* Hero Section */}
@@ -411,12 +413,6 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
         onClose={() => setAuthModalOpen(false)}
         mode={authMode}
         onModeChange={setAuthMode}
-      />
-
-      {/* Donation Modal */}
-      <DonationModal
-        isOpen={donationModalOpen}
-        onClose={() => setDonationModalOpen(false)}
       />
     </div>
   );

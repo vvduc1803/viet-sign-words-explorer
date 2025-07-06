@@ -9,6 +9,7 @@ import UpgradeModal from './UpgradeModal';
 import FeedbackModal from './FeedbackModal';
 import ContributeModal from './ContributeModal';
 import ChangePasswordModal from './ChangePasswordModal';
+import DonationModal from './DonationModal';
 
 const Header = () => {
   const { user, isLoggedIn, logout } = useAuth();
@@ -20,6 +21,7 @@ const Header = () => {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const navItems = [
@@ -105,6 +107,15 @@ const Header = () => {
                   <span>Bộ sưu tập</span>
                 </Link>
               )}
+
+              {/* Donation Button */}
+              <Button
+                onClick={() => setIsDonationModalOpen(true)}
+                className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-all duration-200"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Ủng hộ dự án
+              </Button>
 
               {/* Upgrade Button - Only show for non-premium users */}
               {(!isLoggedIn || !user?.isPremium) && (
@@ -268,6 +279,18 @@ const Header = () => {
               </nav>
               
               <div className="mt-4 pt-4 border-t space-y-2">
+                {/* Donation Button - Mobile */}
+                <Button
+                  onClick={() => {
+                    setIsDonationModalOpen(true);
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-medium"
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  Ủng hộ dự án
+                </Button>
+
                 {/* Upgrade Button - Mobile - Only show for non-premium users */}
                 {(!isLoggedIn || !user?.isPremium) && (
                   <Button
@@ -376,6 +399,10 @@ const Header = () => {
       <ChangePasswordModal 
         isOpen={isChangePasswordModalOpen} 
         onClose={() => setIsChangePasswordModalOpen(false)} 
+      />
+      <DonationModal 
+        isOpen={isDonationModalOpen} 
+        onClose={() => setIsDonationModalOpen(false)} 
       />
     </>
   );
