@@ -1,120 +1,159 @@
 
 import React from 'react';
-import { AlertCircle, Star, Upload, Search, BookOpen, PenTool } from 'lucide-react';
+import { AlertTriangle, Heart, Zap } from 'lucide-react';
 
 interface UsageLimitBannerProps {
   isLoggedIn: boolean;
   isPremium: boolean;
-  onUpgrade?: () => void;
-  onLogin?: () => void;
   currentUsage: {
     searches: number;
     uploads: number;
     practices: number;
-    savedWords: number;
   };
+  onLogin: () => void;
+  onUpgrade: () => void;
 }
 
-const UsageLimitBanner: React.FC<UsageLimitBannerProps> = ({ 
-  isLoggedIn, 
+const UsageLimitBanner: React.FC<UsageLimitBannerProps> = ({
+  isLoggedIn,
   isPremium,
-  onUpgrade, 
+  currentUsage,
   onLogin,
-  currentUsage 
+  onUpgrade,
 }) => {
-  // Don't show banner for premium users
+  const limits = {
+    searches: isLoggedIn ? (isPremium ? -1 : 50) : 10,
+    uploads: isLoggedIn ? (isPremium ? -1 : 20) : 5,
+    practices: isLoggedIn ? (isPremium ? -1 : 30) : 3,
+  };
+
+  const getUsagePercentage = (current: number, limit: number) => {
+    if (limit === -1) return 0; // Unlimited
+    return Math.min((current / limit) * 100, 100);
+  };
+
+  const isNearLimit = (current: number, limit: number) => {
+    if (limit === -1) return false;
+    return current >= limit * 0.8;
+  };
+
+  const isAtLimit = (current: number, limit: number) => {
+    if (limit === -1) return false;
+    return current >= limit;
+  };
+
   if (isPremium) {
-    return null;
-  }
-
-  const limits = isLoggedIn 
-    ? { searches: 50, uploads: 3, practices: 3, savedWords: 50 }
-    : { searches: 20, uploads: 1, practices: 0, savedWords: 0 };
-
-  const isSearchLimitReached = currentUsage.searches >= limits.searches;
-  const isUploadLimitReached = currentUsage.uploads >= limits.uploads;
-
-  if (isSearchLimitReached || isUploadLimitReached) {
     return (
-      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6 animate-slide-up">
-        <div className="flex items-start space-x-3">
-          <AlertCircle className="w-5 h-5 text-orange-500 mt-0.5" />
-          <div className="flex-1">
-            <h4 className="font-medium text-orange-800 mb-2">
-              Đã đạt giới hạn sử dụng hôm nay
-            </h4>
-            <p className="text-orange-700 text-sm mb-3">
-              {isSearchLimitReached && `Bạn đã tra cứu ${currentUsage.searches}/${limits.searches} từ hôm nay. `}
-              {isUploadLimitReached && `Bạn đã tải lên ${currentUsage.uploads}/${limits.uploads} tài liệu hôm nay. `}
-              {!isLoggedIn ? 'Đăng nhập để tăng giới hạn sử dụng.' : 'Nâng cấp để sử dụng không giới hạn.'}
-            </p>
-            <div className="flex space-x-3">
-              {!isLoggedIn ? (
-                <button
-                  onClick={onLogin}
-                  className="px-4 py-2 bg-education-blue text-white rounded-lg text-sm font-medium hover:bg-blue-600 transition-colors"
-                >
-                  Đăng nhập ngay
-                </button>
-              ) : (
-                <button
-                  onClick={onUpgrade}
-                  className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
-                >
-                  <Star className="w-4 h-4" />
-                  <span>Nâng cấp Plus</span>
-                </button>
-              )}
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Heart className="w-5 h-5 text-green-600 mr-3" />
+            <div>
+              <h3 className="font-semibold text-green-800">Cảm ơn bạn đã ủng hộ!</h3>
+              <p className="text-green-600 text-sm">Bạn đang giúp xây dựng cộng đồng giao tiếp không rào cản</p>
             </div>
           </div>
+          <div className="text-green-600 font-medium">Không giới hạn</div>
         </div>
       </div>
     );
   }
 
+  const showWarning = !isLoggedIn || 
+    isNearLimit(currentUsage.searches, limits.searches) ||
+    isNearLimit(currentUsage.uploads, limits.uploads) ||
+    isNearLimit(currentUsage.practices, limits.practices);
+
+  if (!showWarning) return null;
+
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h4 className="font-medium text-blue-800 mb-2">
-            {isLoggedIn ? 'Giới hạn hôm nay (Tài khoản thường)' : 'Giới hạn hôm nay (Chưa đăng nhập)'}
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <Search className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700">
-                Tra cứu: {currentUsage.searches}/{limits.searches}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Upload className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700">
-                Tải lên: {currentUsage.uploads}/{limits.uploads}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <PenTool className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700">
-                Ôn tập: {currentUsage.practices}/{limits.practices}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4 text-blue-600" />
-              <span className="text-blue-700">
-                Bộ sưu tập: {currentUsage.savedWords}/{limits.savedWords}
-              </span>
+    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-6">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start">
+          <AlertTriangle className="w-5 h-5 text-amber-600 mr-3 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-amber-800 mb-2">
+              {!isLoggedIn ? 'Giới hạn sử dụng cho khách' : 'Sắp đạt giới hạn sử dụng'}
+            </h3>
+            
+            <div className="space-y-2 mb-3">
+              {/* Searches */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Tra cứu:</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        isAtLimit(currentUsage.searches, limits.searches) ? 'bg-red-500' :
+                        isNearLimit(currentUsage.searches, limits.searches) ? 'bg-amber-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${getUsagePercentage(currentUsage.searches, limits.searches)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-gray-700 font-medium">
+                    {currentUsage.searches}/{limits.searches === -1 ? '∞' : limits.searches}
+                  </span>
+                </div>
+              </div>
+
+              {/* Uploads */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Tải lên:</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        isAtLimit(currentUsage.uploads, limits.uploads) ? 'bg-red-500' :
+                        isNearLimit(currentUsage.uploads, limits.uploads) ? 'bg-amber-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${getUsagePercentage(currentUsage.uploads, limits.uploads)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-gray-700 font-medium">
+                    {currentUsage.uploads}/{limits.uploads === -1 ? '∞' : limits.uploads}
+                  </span>
+                </div>
+              </div>
+
+              {/* Practices */}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Ôn tập:</span>
+                <div className="flex items-center space-x-2">
+                  <div className="w-20 bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full ${
+                        isAtLimit(currentUsage.practices, limits.practices) ? 'bg-red-500' :
+                        isNearLimit(currentUsage.practices, limits.practices) ? 'bg-amber-500' : 'bg-green-500'
+                      }`}
+                      style={{ width: `${getUsagePercentage(currentUsage.practices, limits.practices)}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-gray-700 font-medium">
+                    {currentUsage.practices}/{limits.practices === -1 ? '∞' : limits.practices}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        {isLoggedIn && (
+
+        <div className="flex flex-col space-y-2 ml-4">
+          {!isLoggedIn && (
+            <button
+              onClick={onLogin}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+            >
+              Đăng nhập
+            </button>
+          )}
           <button
             onClick={onUpgrade}
-            className="px-4 py-2 bg-gradient-to-r from-education-blue to-education-purple text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
+            className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 whitespace-nowrap flex items-center space-x-1"
           >
-            <Star className="w-4 h-4" />
-            <span>Nâng cấp Plus</span>
+            <Heart className="w-4 h-4" />
+            <span>Ủng hộ dự án</span>
           </button>
-        )}
+        </div>
       </div>
     </div>
   );

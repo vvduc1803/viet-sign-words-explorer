@@ -7,7 +7,7 @@ import TooltipSettings from '../components/TooltipSettings';
 import WordTooltip from '../components/WordTooltip';
 import UsageLimitBanner from '../components/UsageLimitBanner';
 import AuthModal from '../components/AuthModal';
-import UpgradeModal from '../components/UpgradeModal';
+import DonationModal from '../components/DonationModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const Index = () => {
@@ -31,7 +31,7 @@ const Index = () => {
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot-password' | 'reset-password'>('login');
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [donationModalOpen, setDonationModalOpen] = useState(false);
 
   // Handle URL search parameters
   useEffect(() => {
@@ -164,12 +164,12 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
     window.getSelection()?.removeAllRanges();
   };
 
-  const handleUpgradeClick = () => {
+  const handleDonateClick = () => {
     if (!isLoggedIn) {
       setAuthMode('login');
       setAuthModalOpen(true);
     } else {
-      setUpgradeModalOpen(true);
+      setDonationModalOpen(true);
     }
   };
 
@@ -185,7 +185,7 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
             setAuthMode('login');
             setAuthModalOpen(true);
           }}
-          onUpgrade={handleUpgradeClick}
+          onUpgrade={handleDonateClick}
         />
 
         {/* Hero Section */}
@@ -418,12 +418,12 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
         onModeChange={setAuthMode}
       />
 
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={upgradeModalOpen}
-        onClose={() => setUpgradeModalOpen(false)}
+      {/* Donation Modal */}
+      <DonationModal
+        isOpen={donationModalOpen}
+        onClose={() => setDonationModalOpen(false)}
         onLoginRequired={() => {
-          setUpgradeModalOpen(false);
+          setDonationModalOpen(false);
           setAuthMode('login');
           setAuthModalOpen(true);
         }}
