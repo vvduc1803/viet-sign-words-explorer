@@ -1,30 +1,20 @@
 
 import React, { useState } from 'react';
-import { X, Heart, HandHeart, Users, Star, Zap } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { X, Heart, HandHeart, Users, Star } from 'lucide-react';
 import PaymentModal from './PaymentModal';
 
 interface DonationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginRequired?: () => void;
 }
 
-const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose, onLoginRequired }) => {
-  const { user, isLoggedIn } = useAuth();
+const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose }) => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(100000);
 
   if (!isOpen) return null;
 
   const handleDonate = (amount: number) => {
-    if (!isLoggedIn) {
-      if (onLoginRequired) {
-        onLoginRequired();
-      }
-      return;
-    }
-    
     setSelectedAmount(amount);
     setPaymentModalOpen(true);
   };
@@ -64,9 +54,6 @@ const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose, onLoginR
               </div>
               <h2 className="text-3xl font-bold mb-2">Ủng hộ Dự án</h2>
               <p className="text-pink-100 text-lg">Cùng xây dựng cầu nối giao tiếp cho cộng đồng người điếc</p>
-              {!isLoggedIn && (
-                <p className="text-yellow-200 text-sm mt-2 font-medium">⚠️ Bạn cần đăng nhập để quyên góp</p>
-              )}
             </div>
           </div>
 
@@ -116,8 +103,7 @@ const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose, onLoginR
                   <button
                     key={donation.amount}
                     onClick={() => handleDonate(donation.amount)}
-                    disabled={!isLoggedIn}
-                    className="p-4 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:bg-pink-50 transition-all duration-300 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-4 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:bg-pink-50 transition-all duration-300 text-left"
                   >
                     <div className="font-bold text-lg text-gray-800">{donation.label}</div>
                     <div className="text-sm text-gray-600">{donation.description}</div>
@@ -140,7 +126,7 @@ const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose, onLoginR
                 />
                 <button
                   onClick={() => handleDonate(selectedAmount)}
-                  disabled={!isLoggedIn || selectedAmount < 10000}
+                  disabled={selectedAmount < 10000}
                   className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Ủng hộ

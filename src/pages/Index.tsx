@@ -165,12 +165,7 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
   };
 
   const handleDonateClick = () => {
-    if (!isLoggedIn) {
-      setAuthMode('login');
-      setAuthModalOpen(true);
-    } else {
-      setDonationModalOpen(true);
-    }
+    setDonationModalOpen(true);
   };
 
   return (
@@ -422,11 +417,6 @@ Ví dụ: Hôm nay tôi thấy con gà đi kiếm ăn trong vườn. Mẹ tôi �
       <DonationModal
         isOpen={donationModalOpen}
         onClose={() => setDonationModalOpen(false)}
-        onLoginRequired={() => {
-          setDonationModalOpen(false);
-          setAuthMode('login');
-          setAuthModalOpen(true);
-        }}
       />
     </div>
   );

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, QrCode, Upload, CreditCard, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,7 +37,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, amount = 2
         bankName,
         transferImage,
         amount,
-        userId: user?.id || ''
+        userId: user?.id || 'GUEST'
       });
       setSubmitted(true);
     } catch (error) {
@@ -57,7 +56,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, amount = 2
   };
 
   const getTransferContent = () => {
-    return purpose === 'donation' ? `DONATE ${user?.id || 'USER'}` : `PLUS ${user?.id || 'USER'}`;
+    return purpose === 'donation' ? `DONATE ${user?.id || 'GUEST'}` : `PLUS ${user?.id || 'USER'}`;
   };
 
   if (submitted) {
