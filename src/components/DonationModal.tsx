@@ -1,7 +1,10 @@
 
 import React, { useState } from 'react';
-import { X, Heart, HandHeart, Users, Star } from 'lucide-react';
-import PaymentModal from './PaymentModal';
+import { X, Heart, QrCode, Check } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
 
 interface DonationModalProps {
   isOpen: boolean;
@@ -9,181 +12,210 @@ interface DonationModalProps {
 }
 
 const DonationModal: React.FC<DonationModalProps> = ({ isOpen, onClose }) => {
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(100000);
+  const [donorName, setDonorName] = useState('');
+  const [message, setMessage] = useState('');
+  const [showThankYou, setShowThankYou] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleDonate = (amount: number) => {
-    setSelectedAmount(amount);
-    setPaymentModalOpen(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedAmount >= 10000 && donorName.trim()) {
+      console.log('Donation submitted:', { amount: selectedAmount, donorName, message });
+      setShowThankYou(true);
+    }
   };
 
   const donationAmounts = [
-    { amount: 50000, label: '50.000₫', description: 'Hỗ trợ server 1 tuần' },
-    { amount: 100000, label: '100.000₫', description: 'Phát triển tính năng mới' },
-    { amount: 200000, label: '200.000₫', description: 'Tạo video ký hiệu mới' },
-    { amount: 500000, label: '500.000₫', description: 'Mở rộng từ điển' }
+    { amount: 50000, label: '50.000₫' },
+    { amount: 100000, label: '100.000₫' },
+    { amount: 200000, label: '200.000₫' },
+    { amount: 500000, label: '500.000₫' }
   ];
 
-  const impacts = [
-    'Phát triển và duy trì từ điển ngôn ngữ ký hiệu miễn phí',
-    'Tạo ra hàng nghìn video minh họa chất lượng cao',
-    'Hỗ trợ giáo viên và học sinh khuyết tật thính giác',
-    'Xây dựng cộng đồng giao tiếp không rào cản',
-    'Nghiên cứu và phát triển công nghệ hỗ trợ',
-    'Tổ chức các khóa đào tạo ngôn ngữ ký hiệu miễn phí'
-  ];
+  // Thank you screen
+  if (showThankYou) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-pink-600" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800 mb-2">Cảm ơn bạn rất nhiều!</h3>
+          <p className="text-gray-600 mb-4">
+            Sự ủng hộ của <strong>{donorName}</strong> sẽ giúp chúng tôi tiếp tục phát triển từ điển ngôn ngữ ký hiệu và hỗ trợ cộng đồng người điếc Việt Nam.
+          </p>
+          {message && (
+            <div className="bg-pink-50 rounded-xl p-4 mb-4">
+              <p className="text-sm text-gray-700 italic">"{message}"</p>
+            </div>
+          )}
+          <p className="text-sm text-gray-500 mb-6">
+            Chúng tôi đã ghi nhận khoản ủng hộ <strong>{selectedAmount.toLocaleString()}₫</strong> của bạn. 
+            Mọi đóng góp đều có ý nghĩa và tạo nên sự khác biệt!
+          </p>
+          <Button
+            onClick={onClose}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+          >
+            Đóng
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl max-w-2xl w-full animate-bounce-in max-h-[90vh] overflow-y-auto">
-          {/* Header */}
-          <div className="relative p-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl text-white">
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors duration-300"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
-                <Heart className="w-8 h-8" />
-              </div>
-              <h2 className="text-3xl font-bold mb-2">Ủng hộ Dự án</h2>
-              <p className="text-pink-100 text-lg">Cùng xây dựng cầu nối giao tiếp cho cộng đồng người điếc</p>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="relative p-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-t-2xl text-white">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors duration-300"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
+              <Heart className="w-8 h-8" />
             </div>
+            <h2 className="text-2xl font-bold mb-2">Ủng hộ Dự án</h2>
+            <p className="text-pink-100">Cùng xây dựng cầu nối giao tiếp cho cộng đồng người điếc</p>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="p-8">
-            {/* Mission Statement */}
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-center">
-                <Users className="w-6 h-6 mr-2 text-purple-600" />
-                Sứ mệnh của chúng tôi
-              </h3>
-              <p className="text-gray-700 text-lg leading-relaxed mb-4">
-                Chúng tôi tin rằng <strong>giao tiếp không có rào cản</strong> là quyền cơ bản của mọi người. 
-                Từ điển ngôn ngữ ký hiệu này không chỉ là một công cụ học tập, mà còn là 
-                <span className="text-purple-600 font-semibold"> cầu nối kết nối cộng đồng người điếc với thế giới xung quanh</span>.
-              </p>
-              <p className="text-gray-600">
-                Mỗi video, mỗi hình ảnh đều được tạo ra với tình yêu và sự tôn trọng dành cho cộng đồng người điếc Việt Nam.
-              </p>
-            </div>
-
-            {/* Impact Section */}
-            <div className="mb-8">
-              <h3 className="font-semibold text-gray-800 text-lg mb-4 flex items-center">
-                <HandHeart className="w-5 h-5 mr-2 text-pink-500" />
-                Sự đóng góp của bạn sẽ giúp:
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {impacts.map((impact, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 w-6 h-6 bg-pink-100 rounded-full flex items-center justify-center mt-0.5">
-                      <Heart className="w-4 h-4 text-pink-500" />
-                    </div>
-                    <span className="text-gray-700 text-sm">{impact}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Donation Amounts */}
-            <div className="mb-8">
-              <h3 className="font-semibold text-gray-800 text-lg mb-4 text-center">
-                Chọn mức ủng hộ của bạn
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {donationAmounts.map((donation) => (
-                  <button
-                    key={donation.amount}
-                    onClick={() => handleDonate(donation.amount)}
-                    className="p-4 border-2 border-gray-200 rounded-xl hover:border-pink-500 hover:bg-pink-50 transition-all duration-300 text-left"
-                  >
-                    <div className="font-bold text-lg text-gray-800">{donation.label}</div>
-                    <div className="text-sm text-gray-600">{donation.description}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Custom Amount */}
-            <div className="mb-8">
-              <h4 className="font-medium text-gray-700 mb-3">Hoặc nhập số tiền khác:</h4>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  placeholder="Nhập số tiền (VNĐ)"
-                  className="flex-1 input-field"
-                  min="10000"
-                  step="10000"
-                  onChange={(e) => setSelectedAmount(Number(e.target.value))}
-                />
-                <button
-                  onClick={() => handleDonate(selectedAmount)}
-                  disabled={selectedAmount < 10000}
-                  className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Ủng hộ
-                </button>
-              </div>
-            </div>
-
-            {/* Call to Action */}
-            <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-6 mb-6">
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* QR Code và thông tin chuyển khoản */}
+            <div className="space-y-6">
               <div className="text-center">
-                <Star className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-                <h4 className="font-bold text-gray-800 mb-2">Mỗi đóng góp đều có ý nghĩa!</h4>
-                <p className="text-gray-600 text-sm mb-4">
-                  Không chỉ quyên góp, bạn cũng có thể chia sẻ dự án này với bạn bè, 
-                  gia đình để lan tỏa tình yêu và sự quan tâm đến cộng đồng người điếc.
-                </p>
-                <div className="flex gap-3 justify-center flex-wrap">
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                    Chia sẻ Facebook
-                  </button>
-                  <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                    Chia sẻ Zalo
-                  </button>
-                  <button className="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                    Sao chép link
-                  </button>
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin chuyển khoản</h3>
+                
+                {/* QR Code */}
+                <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                  <div className="w-48 h-48 bg-white rounded-lg mx-auto flex items-center justify-center border-2 border-dashed border-gray-300">
+                    <QrCode className="w-32 h-32 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-600 mt-4">Quét mã QR để chuyển khoản</p>
+                </div>
+
+                {/* Thông tin tài khoản */}
+                <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl p-6 space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Số tài khoản</p>
+                    <p className="text-xl font-bold text-gray-800">1234567890</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Ngân hàng</p>
+                    <p className="text-lg font-bold text-gray-800">Vietcombank</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Chủ tài khoản</p>
+                    <p className="text-lg font-bold text-gray-800">DU AN TU DIEN KY HIEU</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Số tiền</p>
+                    <p className="text-2xl font-bold text-pink-600">{selectedAmount.toLocaleString()}₫</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Nội dung chuyển khoản</p>
+                    <p className="text-lg font-bold text-gray-800">UNG HO DU AN</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Trust & Transparency */}
-            <div className="text-center text-sm text-gray-500">
-              <p className="mb-2">
-                <span className="text-green-600">✓</span> Minh bạch tài chính • 
-                <span className="text-green-600 ml-1">✓</span> Báo cáo định kỳ • 
-                <span className="text-green-600 ml-1">✓</span> Thanh toán an toàn
-              </p>
-              <p className="text-xs">
-                Mọi khoản đóng góp sẽ được sử dụng trực tiếp cho việc phát triển và duy trì dự án. 
-                Chúng tôi cam kết minh bạch và báo cáo công khai việc sử dụng tài chính.
-              </p>
+            {/* Form thông tin người ủng hộ */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Thông tin ủng hộ</h3>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Chọn số tiền */}
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 mb-3 block">
+                    Chọn số tiền ủng hộ
+                  </Label>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {donationAmounts.map((donation) => (
+                      <button
+                        key={donation.amount}
+                        type="button"
+                        onClick={() => setSelectedAmount(donation.amount)}
+                        className={`p-3 border-2 rounded-xl transition-all duration-300 text-center ${
+                          selectedAmount === donation.amount
+                            ? 'border-pink-500 bg-pink-50 text-pink-700'
+                            : 'border-gray-200 hover:border-pink-300 hover:bg-pink-25'
+                        }`}
+                      >
+                        <div className="font-bold">{donation.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Hoặc nhập số tiền khác"
+                    value={selectedAmount}
+                    onChange={(e) => setSelectedAmount(Number(e.target.value))}
+                    min="10000"
+                    step="1000"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Tên người ủng hộ */}
+                <div>
+                  <Label htmlFor="donorName" className="text-sm font-medium text-gray-700 mb-2 block">
+                    Tên người ủng hộ *
+                  </Label>
+                  <Input
+                    id="donorName"
+                    type="text"
+                    value={donorName}
+                    onChange={(e) => setDonorName(e.target.value)}
+                    placeholder="Nhập tên của bạn"
+                    required
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Lời nhắn */}
+                <div>
+                  <Label htmlFor="message" className="text-sm font-medium text-gray-700 mb-2 block">
+                    Lời nhắn gửi đến nhóm dự án
+                  </Label>
+                  <Textarea
+                    id="message"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Chia sẻ lời động viên hoặc mong muốn của bạn dành cho dự án..."
+                    rows={4}
+                    className="w-full resize-none"
+                  />
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Lưu ý:</strong> Vui lòng chuyển khoản đúng số tiền và nội dung "UNG HO DU AN". 
+                    Sau khi chuyển khoản thành công, hãy ấn nút "Hoàn tất" bên dưới.
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={selectedAmount < 10000 || !donorName.trim()}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white py-4 text-lg font-semibold"
+                >
+                  Hoàn tất ủng hộ
+                </Button>
+              </form>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={paymentModalOpen}
-        onClose={() => {
-          setPaymentModalOpen(false);
-          onClose();
-        }}
-        amount={selectedAmount}
-        purpose="donation"
-      />
-    </>
+    </div>
   );
 };
 
