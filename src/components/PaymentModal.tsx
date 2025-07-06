@@ -6,9 +6,11 @@ import { useAuth } from '../contexts/AuthContext';
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
+  amount?: number;
+  purpose?: string;
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
+const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, amount = 299000, purpose = 'upgrade' }) => {
   const { user, submitPayment } = useAuth();
   const [accountNumber, setAccountNumber] = useState('');
   const [bankName, setBankName] = useState('');
@@ -35,7 +37,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
         accountNumber,
         bankName,
         transferImage,
-        amount: 299000,
+        amount,
         userId: user?.id || ''
       });
       setSubmitted(true);
@@ -44,6 +46,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const getTitle = () => {
+    return purpose === 'donation' ? 'Ủng hộ dự án' : 'Thanh toán nâng cấp Plus';
+  };
+
+  const getDescription = () => {
+    return purpose === 'donation' ? 'Chuyển khoản để ủng hộ dự án' : 'Chuyển khoản để nâng cấp tài khoản của bạn';
+  };
+
+  const getTransferContent = () => {
+    return purpose === 'donation' ? `DONATE ${user?.id || 'USER'}` : `PLUS ${user?.id || 'USER'}`;
   };
 
   if (submitted) {
@@ -55,7 +69,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">Đã gửi thông tin!</h3>
           <p className="text-gray-600 mb-6">
-            Chúng tôi đã nhận được thông tin thanh toán của bạn. Vui lòng chờ 5-10 phút để chúng tôi xác nhận và nâng cấp tài khoản.
+            {purpose === 'donation' 
+              ? 'Cảm ơn bạn đã ủng hộ dự án! Chúng tôi đã nhận được thông tin của bạn.'
+              : 'Chúng tôi đã nhận được thông tin thanh toán của bạn. Vui lòng chờ 5-10 phút để chúng tôi xác nhận và nâng cấp tài khoản.'
+            }
           </p>
           <button
             onClick={onClose}
@@ -84,8 +101,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-4">
               <CreditCard className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Thanh toán nâng cấp Plus</h2>
-            <p className="text-blue-100">Chuyển khoản để nâng cấp tài khoản của bạn</p>
+            <h2 className="text-2xl font-bold mb-2">{getTitle()}</h2>
+            <p className="text-blue-100">{getDescription()}</p>
           </div>
         </div>
 
@@ -120,11 +137,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Số tiền</p>
-                    <p className="text-2xl font-bold text-education-blue">299.000₫</p>
+                    <p className="text-2xl font-bold text-education-blue">{amount.toLocaleString()}₫</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Nội dung chuyển khoản</p>
-                    <p className="text-lg font-bold text-gray-800">PLUS {user?.id || 'USER'}</p>
+                    <p className="text-lg font-bold text-gray-800">{getTransferContent()}</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +221,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                   <p className="text-sm text-yellow-800">
                     <strong>Lưu ý:</strong> Vui lòng chuyển khoản đúng số tiền và nội dung. 
-                    Chúng tôi sẽ xác nhận trong vòng 5-10 phút và nâng cấp tài khoản của bạn.
+                    Chúng tôi sẽ xác nhận trong vòng 5-10 phút{purpose === 'donation' ? ' và cảm ơn sự ủng hộ của bạn' : ' và nâng cấp tài khoản của bạn'}.
                   </p>
                 </div>
 
